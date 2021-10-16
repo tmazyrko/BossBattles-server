@@ -1,0 +1,7 @@
+const SOCKET_ACTIONS = {
+    CREATE_ROOM: "CREATE_ROOM",
+    JOIN_ROOM: "JOIN_ROOM",
+    LEAVE_ROOM: "LEAVE_ROOM"
+};
+
+module.exports = SOCKET_ACTIONS;
