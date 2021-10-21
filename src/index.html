@@ -26,9 +26,17 @@
 
             // Pointers normalize touch and mouse
             //sprite.on('pointerdown', onClick);
-
+            let meatball = true;
             sprite.on('pointerdown', (event) => {
-                alert('clicked! Meatball meatball spaghetti under meat, ravioli ravioli great barrier reef!');
+                if(meatball == true) {
+                    alert('Meatball meatball spaghetti under meat, ravioli ravioli great barrier reef!');
+                    meatball = false;
+                }
+                else
+                {
+                    alert('Ravioli ravioli give me the formuoli');
+                    meatball = true;
+                }
             });
 
             // Add a ticker callback to move the sprite back and forth
