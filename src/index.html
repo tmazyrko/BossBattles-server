@@ -2,11 +2,43 @@
 <html lang="en">
     <head>
         <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+        <script src="https://pixijs.download/release/pixi.js"></script>
     </head>
     <body>
         <button id="createRoomButton">Create Room</button>
         <button id="joinRoomButton">Join Room</button>
         <button id="leaveRoomButton">Leave Room</button>
+
+        <script>
+            // Create the application helper and add its render target to the page
+            let app = new PIXI.Application({ width: 640, height: 360 });
+            document.body.appendChild(app.view);
+
+            // Create the sprite and add it to the stage
+            let sprite = PIXI.Sprite.from('img/create-button.png');
+            app.stage.addChild(sprite);
+
+            // Opt-in to interactivity
+            sprite.interactive = true;
+
+            // Shows hand cursor
+            sprite.buttonMode = true;
+
+            // Pointers normalize touch and mouse
+            //sprite.on('pointerdown', onClick);
+
+            sprite.on('pointerdown', (event) => {
+                alert('clicked! Meatball meatball spaghetti under meat, ravioli ravioli great barrier reef!');
+            });
+
+            // Add a ticker callback to move the sprite back and forth
+            /*let elapsed = 0.0;
+            app.ticker.add((delta) => {
+                elapsed += delta;
+                sprite.x = 100.0 + Math.cos(elapsed/50.0) * 100.0;
+            });*/
+        </script>
+
         <script src="clientSocket.js" type="module"></script>
     </body>
 </html>
