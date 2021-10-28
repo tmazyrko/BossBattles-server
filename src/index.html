@@ -1,17 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <script src="http://localhost:3000/socket.io/socket.io.js"></script>
-        <script src="https://pixijs.download/release/pixi.js"></script>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="" >
+        <title>Boss Battles | Home</title>
     </head>
     <body>
-        <button id="createRoomButton">Create Room</button>
-        <button id="joinRoomButton">Join Room</button>
-        <button id="leaveRoomButton">Leave Room</button>
+
+<!--        <button id="createRoomButton">Create Room</button>-->
+<!--        <button id="joinRoomButton">Join Room</button>-->
+<!--        <button id="leaveRoomButton">Leave Room</button>-->
+
+        <script src="../node_modules/pixi.js/dist/browser/pixi.min.js"></script>
+        <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+<!--        <script src="https://pixijs.download/release/pixi.js"></script>-->
+
+
+<!--        <script src="./js/app.js"></script>-->
 
         <script>
             // Create the application helper and add its render target to the page
-            let app = new PIXI.Application({ width: 640, height: 360 });
+            let app = new PIXI.Application({ width: 1920, height: 1080 });
             document.body.appendChild(app.view);
 
             // Create the sprite and add it to the stage
@@ -46,6 +58,7 @@
                 sprite.x = 100.0 + Math.cos(elapsed/50.0) * 100.0;
             });*/
         </script>
+
 
         <script src="clientSocket.js" type="module"></script>
     </body>
