@@ -25,13 +25,15 @@ amqp.connect('amqp://test:test@10.10.5.32/%2F', function(error0, connection) {
                 throw error2;
             }
             let correlationId = uuidv4();
-            let query = "SHOW TABLES;";
+            let query = "SELECT * FROM cats;";
 
             console.log(' [x] Sending query: %s', query);
 
             channel.consume(q.queue, function(msg) {
                 if (msg.properties.correlationId == correlationId) {
+                    const obj = JSON.parse(msg.content.toString());
                     console.log(' [.] Got %s', msg.content.toString());
+                    console.log(' [.] JSON\n' + JSON.stringify(obj, null, 2))
                     setTimeout(function() {
                         connection.close();
                         process.exit()
@@ -48,10 +50,3 @@ amqp.connect('amqp://test:test@10.10.5.32/%2F', function(error0, connection) {
         });
     });
 });
-
-function generateUUID() {
-
-    return Math.random().toString() +
-            Math.random().toString() +
-            Math.random().toString();
-}
