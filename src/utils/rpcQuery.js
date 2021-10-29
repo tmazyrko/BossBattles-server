@@ -26,11 +26,12 @@ module.exports = function query(query) {
                     if (msg.properties.correlationId == correlationId) {
                         const obj = JSON.parse(msg.content.toString());
                         console.log(' [.] Got %s', msg.content.toString());
-                        console.log(' [.] JSON\n' + JSON.stringify(obj, null, 2))
+                        console.log(' [.] JSON\n' + JSON.stringify(obj, null, 2));
                         setTimeout(function () {
                             connection.close();
                             process.exit()
                         }, 500);
+                        return JSON.stringify(obj, null, 2);
                     }
                 }, {
                     noAck: true
