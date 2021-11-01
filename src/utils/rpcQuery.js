@@ -4,17 +4,18 @@ const amqp = require('amqplib/callback_api');
 const { v4: uuidv4 } = require('uuid');
 
 module.exports = function query(query) {
-    amqp.connect('amqp://test:test@10.10.5.32/%2F', function (error0, connection) {
+    let result = "";
+    amqp.connect('amqp://test:test@10.10.5.32/%2F', function func_connect(error0, connection) {
         if (error0) {
             throw error0;
         }
-        connection.createChannel(function (error1, channel) {
+        connection.createChannel(function func_create_channel(error1, channel) {
             if (error1) {
                 throw error1;
             }
             channel.assertQueue('', {
                 exclusive: true
-            }, function (error2, q) {
+            }, function func_assert_queue(error2, q) {
                 if (error2) {
                     throw error2;
                 }
@@ -22,16 +23,16 @@ module.exports = function query(query) {
 
                 console.log(' [x] Sending query: %s', query);
 
-                channel.consume(q.queue, function (msg) {
+                channel.consume(q.queue, function func_consume(msg) {
                     if (msg.properties.correlationId == correlationId) {
                         const obj = JSON.parse(msg.content.toString());
-                        console.log(' [.] Got %s', msg.content.toString());
-                        console.log(' [.] JSON\n' + JSON.stringify(obj, null, 2));
+                        //console.log(' [.] Got %s', msg.content.toString());
+                        //console.log(' [.] JSON\n' + JSON.stringify(obj, null, 2));
                         setTimeout(function () {
                             connection.close();
-                            process.exit()
+                            //process.exit()
                         }, 500);
-                        return JSON.stringify(obj, null, 2);
+                        result = JSON.stringify(obj, null, 2);
                     }
                 }, {
                     noAck: true
@@ -45,4 +46,5 @@ module.exports = function query(query) {
             });
         });
     });
+    return result;
 }

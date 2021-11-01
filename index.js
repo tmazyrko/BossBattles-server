@@ -8,6 +8,8 @@ const app = express(
 
 app.use(express.static('public'));
 
+const rpc = require("./src/utils/rpcQuery.js");
+console.log(rpc("SELECT * FROM cats;"));
 
 // Enables Socket.IO
 const server = require("./src/utils/socket.js")(app);
