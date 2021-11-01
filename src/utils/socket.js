@@ -1,6 +1,7 @@
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const SOCKET_ACTIONS = require("./socketActions");
+const rpc = require("./rpcQuery.js");
 
 module.exports = Socket = (httpServer) => {
 
@@ -11,9 +12,14 @@ module.exports = Socket = (httpServer) => {
         console.log('New user connected. Socket ID: ' + socket.id);
 
         
-        socket.on(SOCKET_ACTIONS.JOIN_ROOM, (room) => {
+        socket.on(SOCKET_ACTIONS.JOIN_ROOM, async (room) => {  // must make the function async to be able to await rpcQuery !!!
             if(room === "room1"){
                 io.in(socket.id).socketsJoin("room1");
+
+                // EXAMPLE FOR USING rpcQuery !!!
+                //const result = await rpc("SELECT * FROM cats;")  // await is necessary so that we wait for the result instead of jumping ahead
+                //console.error(result);
+
                 socket.emit("successful_join", {msg: `you have joined ${room}`, room});
             }
         });
