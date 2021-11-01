@@ -1,6 +1,7 @@
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const SOCKET_ACTIONS = require("./socketActions");
+const rpc = require("./rpcQuery.js");
 
 module.exports = Socket = (httpServer) => {
 
@@ -11,9 +12,11 @@ module.exports = Socket = (httpServer) => {
         console.log('New user connected. Socket ID: ' + socket.id);
 
         
-        socket.on(SOCKET_ACTIONS.JOIN_ROOM, (room) => {
+        socket.on(SOCKET_ACTIONS.JOIN_ROOM, async (room) => {
             if(room === "room1"){
                 io.in(socket.id).socketsJoin("room1");
+                //const result = await rpc("SELECT * FROM cats;")
+                //console.error(result);
                 socket.emit("successful_join", {msg: `you have joined ${room}`, room});
             }
         });
