@@ -90,7 +90,7 @@ app.post("/login", async (req, res) => {
             );
 
             // user
-            res.status(200).json(user);
+            res.status(200).json(token);
         }
         res.status(400).send("Invalid Credentials");
     } catch (err) {
