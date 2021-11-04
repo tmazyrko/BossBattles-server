@@ -8,7 +8,6 @@ const app = express(
 
 app.use(express.static('public'));
 
-
 // Enables Socket.IO
 const server = require("./src/utils/socket.js")(app);
 
