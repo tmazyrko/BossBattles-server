@@ -16,21 +16,19 @@ app.use(express.json());
 // Register
 app.post("/register", async (req, res) => {
     // Our register logic starts here
-    const result = await rpc("SELECT * FROM cats;")
-    console.log(result)
     try {
         // Get user input
-        const {usern, password} = req.body;
+        const {username, password} = req.body;
 
         // Validate user input
-        if (!(usern && password) || usern == undefined || password == undefined) {
+        if (!(username && password)) {
             res.status(400).send("All fields required");
         }
 
         // check if user already exist
         // Validate if user exist in our database
         //const oldUser = await User.findOne({ email });
-        const oldUserQuery = "SELECT count(*) FROM PlayerInfo WHERE Username = \"" + usern + "\";"
+        const oldUserQuery = "SELECT count(*) FROM PlayerInfo WHERE Username = \"" + username + "\";"
         const oldUser = await rpc(oldUserQuery)
         console.log(oldUser)
         if (oldUser > 0) {
@@ -41,12 +39,12 @@ app.post("/register", async (req, res) => {
         const encryptedPassword = await bcrypt.hash(password, 10);
 
         // Create user in our database
-        const createUserQuery = "INSERT INTO PlayerInfo (Username, Pwdhash) VALUES (" + usern + ", " + encryptedPassword + ")"
+        const createUserQuery = "INSERT INTO PlayerInfo (Username, Pwdhash) VALUES (" + username + ", " + encryptedPassword + ")"
         await rpc(createUserQuery) //const createUser =
 
         // Create token
         const token = jwt.sign(
-            { usern: usern },
+            { username: username },
             process.env.TOKEN_KEY,
             {
                 expiresIn: "72h",
@@ -65,9 +63,40 @@ app.post("/register", async (req, res) => {
 });
 
 // Login
-app.post("/login", (req, res) => {
-// our login logic goes here
+app.post("/login", async (req, res) => {
+
+    // Our login logic starts here
+    try {
+        // Get user input
+        const { username, password } = req.body;
+
+        // Validate user input
+        if (!(username && password)) {
+            res.status(400).send("All input is required");
+        }
+        // Validate if user exist in our database
+        const userQuery = "SELECT * FROM PlayerInfo WHERE Username = \"" + username + "\";"
+        const user = await rpc(userQuery)
+
+        if (user && (await bcrypt.compare(password, user))) {
+            // Create token
+            // save user token
+            const token = jwt.sign(
+                { username: username },
+                process.env.TOKEN_KEY,
+                {
+                    expiresIn: "72h",
+                }
+            );
+
+            // user
+            res.status(200).json(user);
+        }
+        res.status(400).send("Invalid Credentials");
+    } catch (err) {
+        console.log(err);
+    }
+    // Our register logic ends here
 });
 
-//
 module.exports = app;
