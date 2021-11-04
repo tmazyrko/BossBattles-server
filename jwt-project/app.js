@@ -99,4 +99,10 @@ app.post("/login", async (req, res) => {
     // Our register logic ends here
 });
 
+//test auth.js
+const auth = require("./middleware/auth");
+app.post("/welcome", auth, (req, res) => {
+    res.status(200).send("Welcome");
+});
+
 module.exports = app;
