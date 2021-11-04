@@ -49,6 +49,16 @@ module.exports = Socket = (httpServer) => {
             console.log(io.of("/").adapter.rooms)
         });
 
+        //socket.on(SOCKET_ACTIONS.ATTACK, async (chosen_attack) => {
+            // commit players move to this room's table
+            // check if both players have already attacked
+            // let clients know move is in progress (on client-side show something to represent that)
+            // do game math/code/calculations (querying db, updating db, etc.)
+            // send updated info to client - result of moves (new hp, etc.)
+            // cont: if the game is over, let the clients know that instead
+            // cont: this will let the client update the UI to the victory screen, taking away the old triggers (buttons) and showing new ones to progress through the UI flow
+        //});
+
         socket.on("disconnect", (reason) => {
             console.log(`User ${socket.id} has disconnected. Reason: ` + reason)
         });
