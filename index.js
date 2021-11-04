@@ -13,7 +13,7 @@ app.use(express.static('public'));
 const server = require("./src/utils/socket.js")(app);
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/src/index.html');
+    res.sendFile(__dirname + '/src/game.html');
 });
 
 
