@@ -11,40 +11,147 @@
 
         <script>
             // Create the application helper and add its render target to the page
-            let app = new PIXI.Application({ width: 640, height: 360 });
+            let app = new PIXI.Application({ width: 1280, height: 720 });
             document.body.appendChild(app.view);
+            let ticker = PIXI.Ticker.shared;
+
+            let turn = 0;
+            let damage = 0;
+            let emove = 0;
 
             // Create the sprite and add it to the stage
-            let sprite = PIXI.Sprite.from('img/create-button.png');
-            app.stage.addChild(sprite);
+            let atk1 = PIXI.Sprite.from('img/atk1.png');
+            app.stage.addChild(atk1);
+            atk1.x = 50
+            atk1.y = 620
+
+            let atk2 = PIXI.Sprite.from('img/atk2.png');
+            app.stage.addChild(atk2);
+            atk2.x = 350
+            atk2.y = 620
+
+            let atk3 = PIXI.Sprite.from('img/atk3.png');
+            app.stage.addChild(atk3);
+            atk3.x = 650
+            atk3.y = 620
+
+            let atk4 = PIXI.Sprite.from('img/atk4.png');
+            app.stage.addChild(atk4);
+            atk4.x = 950
+            atk4.y = 620
+
+            let playerhpnum = 100
+            let playerhp = new PIXI.Text('HP:' + playerhpnum,{fontFamily : 'Arial', fontSize: 50, fill : 0xff1010, align : 'left'});
+            app.stage.addChild(playerhp);
+            playerhp.x = 30
+            playerhp.y = 20
+
+            let enemyhpnum = 100
+            let enemyhp = new PIXI.Text('HP:' + enemyhpnum,{fontFamily : 'Arial', fontSize: 50, fill : 0xff1010, align : 'right'});
+            app.stage.addChild(enemyhp);
+            enemyhp.x = 1080
+            enemyhp.y = 20
 
             // Opt-in to interactivity
-            sprite.interactive = true;
+            atk1.interactive = true;
+            atk2.interactive = true;
+            atk3.interactive = true;
+            atk4.interactive = true;
 
             // Shows hand cursor
-            sprite.buttonMode = true;
+            atk1.buttonMode = true;
+            atk2.buttonMode = true;
+            atk3.buttonMode = true;
+            atk4.buttonMode = true;
+
 
             // Pointers normalize touch and mouse
-            //sprite.on('pointerdown', onClick);
-            let meatball = true;
-            sprite.on('pointerdown', (event) => {
-                if(meatball == true) {
-                    alert('Meatball meatball spaghetti under meat, ravioli ravioli great barrier reef!');
-                    meatball = false;
-                }
-                else
-                {
-                    alert('Ravioli ravioli give me the formuoli');
-                    meatball = true;
-                }
-            });
+            //sprite.on('pointerdown', onClick)
+            ticker.start();
+            app.ticker.add(delta => loop(delta));
+            function loop(delta){
+                playerhp.text = 'HP:' + playerhpnum;
+                enemyhp.text = 'HP:' + enemyhpnum;
+                atk1.on('pointerdown', (event) => {
+                    if (turn === 0) {
+                        damage = 25 * (Math.random() * (1.25 - 0.75) + 0.75);
+                        damage = Math.round(damage);
+                        alert('Player 1 used Attack 1 on Player 2 for ' + damage + ' damage!');
+                        enemyhpnum -= damage;
+                        turn = 1;
+                    }
+                });
+                atk2.on('pointerdown', (event) => {
+                    if (turn === 0) {
+                        damage = 10 * (Math.random() * (4 - 1) + 1);
+                        damage = Math.round(damage);
+                        alert('Player 1 used Attack 2 on Player 2 for ' + damage + ' damage!');
+                        enemyhpnum -= damage;
+                        turn = 1;
+                    }
+                });
+                atk3.on('pointerdown', (event) => {
+                    if (turn === 0) {
+                        damage = 5 * (Math.random() * (10 - 1) + 1);
+                        damage = Math.round(damage);
+                        alert('Player 1 used Attack 3 on Player 2 for ' + damage + ' damage!');
+                        enemyhpnum -= damage;
+                        turn = 1;
+                    }
+                });
+                atk4.on('pointerdown', (event) => {
+                    if (turn === 0) {
+                        damage = 20 * (Math.random() * (1.1 - 0.9) + 0.9);
+                        damage = Math.round(damage);
+                        alert('Player 1 used Attack 4 on Player 2 for ' + damage + ' damage!');
+                        enemyhpnum -= damage;
+                        turn = 1;
+                    }
+                });
 
+
+                if (turn === 1) {
+                    emove = Math.round((Math.random() * (4 - 1) + 1));
+                    if (emove === 1){
+                        damage = 25 * (Math.random() * (1.25 - 0.75) + 0.75);
+                        damage = Math.round(damage);
+                        alert('Player 2 used Attack 1 on Player 1 for ' + damage + ' damage!');
+                        playerhpnum -= damage;
+                    }
+                    else if (emove === 2){
+                        damage = 10 * (Math.random() * (4 - 1) + 1);
+                        damage = Math.round(damage);
+                        alert('Player 2 used Attack 1 on Player 1 for ' + damage + ' damage!');
+                        playerhpnum -= damage;
+                    }
+                    else if (emove === 3){
+                        damage = 5 * (Math.random() * (10 - 1) + 1);
+                        damage = Math.round(damage);
+                        alert('Player 2 used Attack 1 on Player 1 for ' + damage + ' damage!');
+                        playerhpnum -= damage;
+                    }
+                    else if (emove === 4){
+                        damage = 20 * (Math.random() * (1.1 - 0.9) + 0.9);
+                        damage = Math.round(damage);
+                        alert('Player 2 used Attack 1 on Player 1 for ' + damage + ' damage!');
+                        playerhpnum -= damage;
+                    }
+                    turn = 0;
+                }
+                if (playerhpnum <= 0){
+                    alert('You are out of HP! Game over! You lose!')
+                }
+                if (enemyhpnum <= 0){
+                    alert('Your opponent is out of HP! Game over! You win!')
+                }
+            }
             // Add a ticker callback to move the sprite back and forth
             /*let elapsed = 0.0;
             app.ticker.add((delta) => {
                 elapsed += delta;
                 sprite.x = 100.0 + Math.cos(elapsed/50.0) * 100.0;
             });*/
+
         </script>
 
         <script src="clientSocket.js" type="module"></script>
