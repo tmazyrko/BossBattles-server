@@ -42,10 +42,10 @@ app.post("/register", async (req, res) => {
         //const oldUser = await User.findOne({ email });
         const oldUserQuery = "SELECT count(*) FROM PlayerInfo WHERE Username = \"" + username + "\";"
         const oldUser = await rpc(oldUserQuery)
-        const oldUserParse = JSON.parse(oldUser);
-        console.log(oldUser)
+        //const oldUserParse = JSON.parse(oldUser);
+        console.log(oldUser["count(*)"])
 
-        if (oldUserParse[0].strip("(*)").count > 0) {
+        if (oldUser["count(*)"] > 0) {
             return res.status(409).send("User Already Exist. Please Login");
         }
 
