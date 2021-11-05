@@ -32,7 +32,7 @@ module.exports = function query(query) {
                                 connection.close();
                                 //process.exit()
                             }, 500);
-                            resolve(JSON.stringify(obj, null, 2));
+                            resolve(obj);
                         }
                     }, {
                         noAck: true

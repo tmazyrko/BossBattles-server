@@ -17,7 +17,7 @@ module.exports = Socket = (httpServer) => {
                 io.in(socket.id).socketsJoin("room1");
 
                 // EXAMPLE FOR USING rpcQuery !!!
-                //const result = await rpc("SELECT * FROM cats;")  // await is necessary so that we wait for the result instead of jumping ahead
+                //const result = await rpc("SELECT count(*) FROM PlayerInfo WHERE Username = \"test\";")  // await is necessary so that we wait for the result instead of jumping ahead
                 //console.error(result);
 
                 socket.emit("successful_join", {msg: `you have joined ${room}`, room});
