@@ -100,7 +100,7 @@ app.post("/login", async (req, res) => {
 });
 
 //test auth.js
-const auth = require("./middleware/auth");
+const auth = require("../src/middleware/auth");
 app.post("/welcome", auth, (req, res) => {
     res.status(200).send("Welcome");
 });
