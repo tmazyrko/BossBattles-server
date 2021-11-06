@@ -1,19 +1,15 @@
-const express = require('express')
 const SERVER_PORT = 3000;
 const TOKEN_KEY = "039gj0ewg0ju98wgasew0hi9ufWAh9*)FH098WHf(80"
 
-
-require("dotenv").config();
+const express = require('express')
 const jwt = require("jsonwebtoken");
 const rpc = require("./src/utils/rpcQuery");
-const bcrypt = require("bcrypt");
+const argon2 = require('argon2');
 
 const app = express(
     [express.urlencoded({ extended: true }),
     express.json()]
 );
-//const app = express();
-//app.use(express.static('public'));
 app.use(express.json());
 
 
@@ -39,10 +35,8 @@ app.post("/register", async (req, res) => {
 
         // check if user already exist
         // Validate if user exist in our database
-        //const oldUser = await User.findOne({ email });
         const oldUserQuery = "SELECT count(*) FROM PlayerInfo WHERE Username = \"" + username + "\";"
         const oldUser = await rpc(oldUserQuery)
-        //const oldUserParse = JSON.parse(oldUser);
         console.log(oldUser["count(*)"])
 
         if (oldUser["count(*)"] > 0) {
@@ -50,12 +44,11 @@ app.post("/register", async (req, res) => {
         }
 
         //Encrypt user password
-        const encryptedPassword = await bcrypt.hash(password, 10);
+        const encryptedPassword = await argon2.hash(password, 10)
 
         // Create user in our database
         const createUserQuery = "INSERT INTO PlayerInfo VALUES (\"" + username + "\", 0, \"Elon Musk\", 0, 0, 0, \"" + encryptedPassword + "\"" +");"
         const UserQuery = await rpc(createUserQuery) //const createUser =
-        console.log(createUserQuery)
 
         // Create token
         const token = jwt.sign(
@@ -83,13 +76,13 @@ app.post("/login", async (req, res) => {
 
         // Validate user input
         if (!(username && password)) {
-            res.status(400).send("All input is required");
+            return res.status(400).send("All input is required");
         }
         // Validate if user exist in our database
-        const userQuery = "SELECT * FROM PlayerInfo WHERE Username = \"" + username + "\";"
+        const userQuery = "SELECT Pwdhash FROM PlayerInfo WHERE Username = \"" + username + "\";"
         const user = await rpc(userQuery)
-
-        if (user && (await bcrypt.compare(password, user))) {
+        //await bcrypt.compare(password.toString(), user["Pwdhash"].toString())
+        if (user && (await argon2.verify(user["Pwdhash"].toString(), password.toString()))) {
             // Create token
             // save user token
             const token = jwt.sign(
@@ -99,11 +92,9 @@ app.post("/login", async (req, res) => {
                     expiresIn: "72h",
                 }
             );
-
-            // user
-            res.status(200).json(token);
+            return res.status(200).json(token);
         }
-        res.status(400).send("Invalid Credentials");
+        return res.status(400).send("Invalid Credentials");
     } catch (err) {
         console.log(err);
     }
