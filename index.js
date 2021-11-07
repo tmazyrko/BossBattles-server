@@ -23,8 +23,8 @@ app.get('/register', (req, res) => {
     res.sendFile(__dirname + '/src/register.html');
 });
 
-app.get('/rooms', (req, res) => {
-    res.sendFile(__dirname + '/src/rooms.html');
+app.get('/game', (req, res) => {
+    res.sendFile(__dirname + '/src/game.html');
 });
 
 server.listen(SERVER_PORT, () => {
