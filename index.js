@@ -8,12 +8,18 @@ const app = express(
     [express.urlencoded({ extended: true }),
     express.json()]
 );
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static('public'));
 
 
 // Enables Socket.IO
 const server = require("./src/utils/socket.js")(app);
 
+// Define auth middleware
+const auth = require("./src/middleware/auth");
+
+// Routes
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/src/index.html');
 });
@@ -26,7 +32,7 @@ app.get('/register', (req, res) => {
     res.sendFile(__dirname + '/src/register.html');
 });
 
-app.get('/game', (req, res) => {
+app.get('/game', auth, (req, res) => {
     res.sendFile(__dirname + '/src/game.html');
 });
 
@@ -35,7 +41,8 @@ app.post("/register", async (req, res) => {
     // Our register logic starts here
     try {
         // Get user input
-        const {username, password} = req.body;
+        const username = req.body.username;
+        const password = req.body.password;
 
         // Validate user input
         if (!(username && password)) {
@@ -91,7 +98,7 @@ app.post("/login", async (req, res) => {
         const userQuery = "SELECT Pwdhash FROM PlayerInfo WHERE Username = \"" + username + "\";"
         const user = await rpc(userQuery)
         //await bcrypt.compare(password.toString(), user["Pwdhash"].toString())
-        if (user && (await argon2.verify(user["Pwdhash"].toString(), password.toString()))) {
+        if (user["Pwdhash"] !== undefined && (await argon2.verify(user["Pwdhash"].toString(), password.toString()))) {
             // Create token
             // save user token
             const token = jwt.sign(
@@ -101,7 +108,10 @@ app.post("/login", async (req, res) => {
                     expiresIn: "72h",
                 }
             );
-            return res.status(200).json(token);
+            console.log("success");
+            //return res.status(200).json(token);
+            res.json(token);
+            res.sendFile(__dirname + '/src/game.html');
         }
         return res.status(400).send("Invalid Credentials");
     } catch (err) {
@@ -111,7 +121,6 @@ app.post("/login", async (req, res) => {
 });
 
 //test auth.js
-const auth = require("./src/middleware/auth");
 app.post("/welcome", auth, (req, res) => {
     res.status(200).send("Welcome");
 });
