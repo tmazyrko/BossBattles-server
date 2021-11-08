@@ -1,41 +1,71 @@
 require('dotenv').config()
-const express = require('express')
-const jwt = require("jsonwebtoken");
-const rpc = require("./src/utils/rpcQuery");
+const express = require('express');
+const sessions = require('express-session');
+const MemoryStore = require('memorystore')(sessions); // Prod-ready server memory storage for sessions
+const rpc = require("./src/utils/rpcQuery"); // Used to query DB, must be called with await within an async function!!
 const argon2 = require('argon2');
 
 const app = express(
     [express.urlencoded({ extended: true }),
     express.json()]
 );
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Serve static files (css, js, etc.)
+app.use(express.static('public'));
+
+// Set up Express sessions middleware
+const oneDay = 1000 * 60 * 60 * 24;
+app.use(sessions({
+    secret: process.env.SESSION_SECRET,
+    saveUninitialized:true,
+    store: new MemoryStore({
+        checkPeriod: 86400000 // prune expired sessions from server every 24h
+    }),
+    cookie: { maxAge: oneDay },
+    resave: false
+}));
 
 // Enables Socket.IO
 const server = require("./src/utils/socket.js")(app);
 
+// Define authentication middleware
+const sessionAuth = require("./src/middleware/sessionAuth.js");
+
+// Routes
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/src/index.html');
 });
 
-app.get('/login', (req, res) => {
-    res.sendFile(__dirname + '/src/login.html');
+app.get('/game', sessionAuth, (req, res) => {  // Requires sessionAuth middleware to authenticate
+    res.sendFile(__dirname + '/src/game.html');
 });
 
+app.use('/game', function(err, req, res, next){
+    console.log(err);
+    //User should be authenticated! Redirect him to log in.
+    res.redirect('/login');
+});
+
+app.get('/logout', function(req, res){
+    req.session.destroy(function(){
+        console.log("User logged out.")
+    });
+    res.redirect('/');
+});
+
+// Registration
 app.get('/register', (req, res) => {
     res.sendFile(__dirname + '/src/register.html');
 });
 
-app.get('/game', (req, res) => {
-    res.sendFile(__dirname + '/src/game.html');
-});
-
-// Registration
-app.post("/register", async (req, res) => {
+app.post('/register', async function(req, res){
     // Our register logic starts here
     try {
         // Get user input
-        const {username, password} = req.body;
+        const username = req.body.username;
+        const password = req.body.password;
 
         // Validate user input
         if (!(username && password)) {
@@ -56,19 +86,13 @@ app.post("/register", async (req, res) => {
         const encryptedPassword = await argon2.hash(password, 10)
 
         // Create user in our database
-        const createUserQuery = "INSERT INTO PlayerInfo VALUES (\"" + username + "\", 0, \"Elon Musk\", 0, 0, 0, \"" + encryptedPassword + "\"" +");"
-        const UserQuery = await rpc(createUserQuery) //const createUser =
+        const createUserQuery = "INSERT INTO PlayerInfo VALUES (\"" + username + "\", 0, \"Elon Musk\", 0, 0, 0, \"" + encryptedPassword + "\"" + ", 0);"
+        await rpc(createUserQuery)
 
-        // Create token
-        const token = jwt.sign(
-            { username: username },
-            process.env.TOKEN_KEY,
-            {
-                expiresIn: "72h",
-            }
-        );
+        const newUser = {id: username, password: password};
+        req.session.user = newUser;
+        res.redirect('/game');
 
-        res.status(201).json(token);
     } catch (err) {
         console.log(err);
     }
@@ -76,12 +100,16 @@ app.post("/register", async (req, res) => {
 });
 
 // Login
-app.post("/login", async (req, res) => {
+app.get('/login', (req, res) => {
+    res.sendFile(__dirname + '/src/login.html');
+});
 
+app.post('/login', async function(req, res){
     // Our login logic starts here
     try {
         // Get user input
-        const { username, password } = req.body;
+        const username = req.body.username;
+        const password = req.body.password;
 
         // Validate user input
         if (!(username && password)) {
@@ -91,17 +119,11 @@ app.post("/login", async (req, res) => {
         const userQuery = "SELECT Pwdhash FROM PlayerInfo WHERE Username = \"" + username + "\";"
         const user = await rpc(userQuery)
         //await bcrypt.compare(password.toString(), user["Pwdhash"].toString())
-        if (user && (await argon2.verify(user["Pwdhash"].toString(), password.toString()))) {
-            // Create token
-            // save user token
-            const token = jwt.sign(
-                { username: username },
-                process.env.TOKEN_KEY,
-                {
-                    expiresIn: "72h",
-                }
-            );
-            return res.status(200).json(token);
+        if (user["Pwdhash"] !== undefined && (await argon2.verify(user["Pwdhash"].toString(), password.toString()))) {
+            req.session.user = {id: username, password: password};
+            res.redirect('/game');
+
+            console.log("success");
         }
         return res.status(400).send("Invalid Credentials");
     } catch (err) {
@@ -110,13 +132,7 @@ app.post("/login", async (req, res) => {
     // Our login logic ends here
 });
 
-//test auth.js
-const auth = require("./src/middleware/auth");
-app.post("/welcome", auth, (req, res) => {
-    res.status(200).send("Welcome");
-});
-
-
+// Start Express server
 server.listen(process.env.SERVER_PORT, () => {
     console.log(`Server now running at ${process.env.SERVER_PORT}`);
 });
