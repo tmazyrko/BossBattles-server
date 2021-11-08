@@ -15,7 +15,18 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/src/index.html');
 });
 
+app.get('/login', (req, res) => {
+    res.sendFile(__dirname + '/src/login.html');
+});
+
+app.get('/register', (req, res) => {
+    res.sendFile(__dirname + '/src/register.html');
+});
+
+app.get('/game', (req, res) => {
+    res.sendFile(__dirname + '/src/game.html');
+});
+
 server.listen(SERVER_PORT, () => {
     console.log(`Server now running at ${SERVER_PORT}`);
 });
-
