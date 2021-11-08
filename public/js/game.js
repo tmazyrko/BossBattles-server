@@ -315,7 +315,7 @@ window.onload = function() {
         console.log("Stored Room ID: " + currentRoom);
     });
 
-    socket.on("change_scene_to_victory", (winner) => {
+    socket.on("change_scene_to_victory", (winner) => { // Use winner var (if needed, bring in more info from the server) to populate the victory scene with info/images/whatever
         gameScene.visible = false;
         victoryScene.visible = true;
         victorySetup();
