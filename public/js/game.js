@@ -303,6 +303,8 @@ window.onload = function() {
     let currentRoom = 100000; // default value for no joined room = 100000
 
     const socket = io();
+
+    // SOCKET - INCOMING MESSAGES FROM SERVER
     socket.on("connect", () => {
         console.log(socket.id);
     });
@@ -313,6 +315,14 @@ window.onload = function() {
         console.log("Stored Room ID: " + currentRoom);
     });
 
+    socket.on("change_scene_to_victory", (winner) => {
+        gameScene.visible = false;
+        victoryScene.visible = true;
+        victorySetup();
+    });
+
+
+    // SOCKET - SENDING MESSAGES TO SERVER
     create.on('pointerdown', function() {
         socket.emit("CREATE_ROOM");
     });
@@ -321,6 +331,17 @@ window.onload = function() {
         socket.emit("JOIN_ROOM", "room1");
         console.log(document.querySelector("input").value);
     });
+
+    atk1.on('pointerdown', atkSubmit(1));
+    atk2.on('pointerdown', atkSubmit(2));
+    atk3.on('pointerdown', atkSubmit(3));
+    atk4.on('pointerdown', atkSubmit(4));
+
+    function atkSubmit(atk){
+        socket.emit("ATK_SUBMIT", atk);
+    }
+
+});
 };
 
 

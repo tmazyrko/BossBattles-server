@@ -49,7 +49,7 @@ module.exports = Socket = (httpServer) => {
             console.log(io.of("/").adapter.rooms)
         });
 
-        //socket.on(SOCKET_ACTIONS.ATTACK, async (chosen_attack) => {
+        socket.on(SOCKET_ACTIONS.ATK_SUBMIT, async (chosen_attack) => {
             // commit players move to this room's table
             // check if both players have already attacked
             // let clients know move is in progress (on client-side show something to represent that)
@@ -57,7 +57,20 @@ module.exports = Socket = (httpServer) => {
             // send updated info to client - result of moves (new hp, etc.)
             // cont: if the game is over, let the clients know that instead
             // cont: this will let the client update the UI to the victory screen, taking away the old triggers (buttons) and showing new ones to progress through the UI flow
-        //});
+
+            // IF( WIN CONDITION = TRUE) THEN EMIT TO CLIENT: socket.emit("change_scene_to_victory", {winner: "blah player"});
+        });
+
+        socket.on(SOCKET_ACTIONS.VICTORY_CONTINUE, async () => {
+            // Check for unlockables here
+            // If nothing to unlock, send a command to client to go back to main menu scene
+            // If there is something to unlock, send a command to client to go to the unlocks scene
+
+            // Two possible options here:
+            // Keep both players in a room for now and emit/reply specifically to each client's msgs by saving the socket id of sender and using io.sockets.socket(savedSocketId).emit(...)
+            // or
+            // Break up the room right after the game ends and just respond directly to each client
+        });
 
         socket.on("disconnect", (reason) => {
             console.log(`User ${socket.id} has disconnected. Reason: ` + reason)
