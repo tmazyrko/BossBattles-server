@@ -18,8 +18,19 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/src/index.html');
 });
 
+app.get('/login', (req, res) => {
+    res.sendFile(__dirname + '/src/login.html');
+});
 
-// Register
+app.get('/register', (req, res) => {
+    res.sendFile(__dirname + '/src/register.html');
+});
+
+app.get('/game', (req, res) => {
+    res.sendFile(__dirname + '/src/game.html');
+});
+
+// Registration
 app.post("/register", async (req, res) => {
     // Our register logic starts here
     try {
@@ -96,7 +107,7 @@ app.post("/login", async (req, res) => {
     } catch (err) {
         console.log(err);
     }
-    // Our register logic ends here
+    // Our login logic ends here
 });
 
 //test auth.js
@@ -104,10 +115,6 @@ const auth = require("./src/middleware/auth");
 app.post("/welcome", auth, (req, res) => {
     res.status(200).send("Welcome");
 });
-
-
-
-
 
 
 server.listen(process.env.SERVER_PORT, () => {
