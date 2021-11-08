@@ -1,6 +1,4 @@
-const SERVER_PORT = 3000;
-const TOKEN_KEY = "039gj0ewg0ju98wgasew0hi9ufWAh9*)FH098WHf(80"
-
+require('dotenv').config()
 const express = require('express')
 const jwt = require("jsonwebtoken");
 const rpc = require("./src/utils/rpcQuery");
@@ -53,7 +51,7 @@ app.post("/register", async (req, res) => {
         // Create token
         const token = jwt.sign(
             { username: username },
-            TOKEN_KEY,
+            process.env.TOKEN_KEY,
             {
                 expiresIn: "72h",
             }
@@ -87,7 +85,7 @@ app.post("/login", async (req, res) => {
             // save user token
             const token = jwt.sign(
                 { username: username },
-                TOKEN_KEY,
+                process.env.TOKEN_KEY,
                 {
                     expiresIn: "72h",
                 }
@@ -112,6 +110,6 @@ app.post("/welcome", auth, (req, res) => {
 
 
 
-server.listen(SERVER_PORT, () => {
-    console.log(`Server now running at ${SERVER_PORT}`);
+server.listen(process.env.SERVER_PORT, () => {
+    console.log(`Server now running at ${process.env.SERVER_PORT}`);
 });
