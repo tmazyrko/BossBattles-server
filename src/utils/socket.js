@@ -19,18 +19,22 @@ module.exports = Socket = (httpServer) => {
             console.log(players);
         });
         
-        socket.on(SOCKET_ACTIONS.JOIN_ROOM, async (room) => {  // must make the function async to be able to await rpcQuery !!!
+        socket.on(SOCKET_ACTIONS.JOIN_ROOM, (room) => {  // must make the function async to be able to await rpcQuery !!!
             const currentRooms = io.of('/').adapter.rooms;
             console.log(currentRooms);
-            if(room > 100000 && room < 1000000){
-                if(!currentRooms.get(room)){
-                    io.in(socket.id).socketsJoin(room);
 
-                    // EXAMPLE FOR USING rpcQuery !!!
-                    //const result = await rpc("SELECT count(*) FROM PlayerInfo WHERE Username = \"test\";")  // await is necessary so that we wait for the result instead of jumping ahead
-                    //console.error(result);
-
-                    socket.emit("successful_join", {msg: `You have joined ${room}.`, room});
+            const regex = /^\d{6}$/gm;
+            if(regex.test(room)){ // Check that supplied room code is exactly 6 digits
+                if(currentRooms.get(room)){ // Check that room exists
+                    if(currentRooms.get(room).size < 2){ // Check that room is not full
+                        io.in(socket.id).socketsJoin(room);
+                        const currentRooms = io.of('/').adapter.rooms;
+                        console.log(currentRooms);
+                        socket.emit("successful_join", {msg: `You have joined ${room}.`, room});
+                    }
+                    else{
+                        socket.emit("failed_join", {msg: `Room ${room} is full!`, room});
+                    }
                 }
                 else{
                     socket.emit("failed_join", {msg: `Room ${room} does not exist!`, room});
@@ -50,7 +54,7 @@ module.exports = Socket = (httpServer) => {
                 room = Math.floor(100000 + Math.random() * 900000);
                
                 if(!currentRooms.get(room)){
-                    io.in(socket.id).socketsJoin(room);
+                    io.in(socket.id).socketsJoin(room.toString());
                     socket.emit("successful_join", {msg: `you have created and connected to ${room}`, room});
                     console.log(`User ${socket.id} has created and connected to room ${room}`);
                     hasCreatedRoom = true;
@@ -92,7 +96,7 @@ module.exports = Socket = (httpServer) => {
         socket.on("disconnect", (reason) => {
             console.log(`User ${socket.id} has disconnected. Reason: ` + reason);
             delete players[socket.id];
-            console.log(players);
+            console.log("Socket ID - Username List: " + players);
         });
 
       
