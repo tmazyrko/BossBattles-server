@@ -21,6 +21,8 @@ let atk1 = PIXI.Sprite.from('../img/atk1.png');
 let atk2 = PIXI.Sprite.from('../img/atk2.png');
 let atk3 = PIXI.Sprite.from('../img/atk3.png');
 let atk4 = PIXI.Sprite.from('../img/atk4.png');
+let player1hp = new PIXI.Text("100");
+let player2hp = new PIXI.Text("100");
 let victoryText = new PIXI.Text("THIS PLAYER WINS!!!");
 let unlockText = new PIXI.Text("YOU'VE UNLOCKED A NEW FIGHTER!");
 
@@ -178,12 +180,6 @@ const lobbySetup = function() {
 
     punch.interactive = true;
     punch.buttonMode = true;
-
-    punch.on('pointerdown', (event) => {
-       lobbyScene.visible = false;
-       selectScene.visible = true;
-       selectSetup();
-    });
 }
 
 // Select scene setup function
@@ -235,12 +231,6 @@ const selectSetup = function() {
     selectScene.addChild(selectMusk);
     selectScene.addChild(selectZuck);
     selectScene.addChild(selectCook);
-
-    selectBezos.on('pointerdown', (event) => {
-        selectScene.visible = false;
-        gameScene.visible = true;
-        gameSetup();
-    });
 }
 
 // Game scene setup function
@@ -262,10 +252,20 @@ const gameSetup = function() {
     atk4.x = 450;
     atk4.anchor.set(0.5);
 
+    player1hp.y = 100;
+    player1hp.x = -450;
+    player1hp.anchor.set(0.5);
+
+    player2hp.y = 100;
+    player2hp.x = 450;
+    player2hp.anchor.set(0.5);
+
     gameScene.addChild(atk1);
     gameScene.addChild(atk2);
     gameScene.addChild(atk3);
     gameScene.addChild(atk4);
+    gameScene.addChild(player1hp);
+    gameScene.addChild(player2hp);
 
     atk1.interactive = true;
     atk1.buttonMode = true;
@@ -278,12 +278,6 @@ const gameSetup = function() {
 
     atk4.interactive = true;
     atk4.buttonMode = true;
-
-    atk1.on('pointerdown', (event) => {
-        gameScene.visible = false;
-        victoryScene.visible = true;
-        victorySetup();
-    });
 }
 
 // Victory scene setup function
@@ -375,6 +369,24 @@ window.onload = function() {
         console.log(response.msg);
     });
 
+    socket.on("players_ready", (response) => {
+        console.log(response.msg);
+        lobbyScene.visible = false;
+        selectScene.visible = true;
+        selectSetup();
+    });
+
+    socket.on("select_char", (response) => {
+        selectScene.visible = false;
+        gameScene.visible = true;
+        gameSetup();
+    });
+
+    socket.on("battle", (message, p1hp, p2hp) => {
+        player1hp.text = p1hp;
+        player2hp.text = p2hp;
+    });
+
     socket.on("change_scene_to_victory", (winner) => { // Use winner var (if needed, bring in more info from the server) to populate the victory scene with info/images/whatever
         gameScene.visible = false;
         victoryScene.visible = true;
@@ -394,14 +406,35 @@ window.onload = function() {
         console.log("Attempting to join room " + roomcode);
     });
 
-    atk1.on('pointerdown', atkSubmit(1));
-    atk2.on('pointerdown', atkSubmit(2));
-    atk3.on('pointerdown', atkSubmit(3));
-    atk4.on('pointerdown', atkSubmit(4));
+    punch.on('pointerdown', function() {
+        socket.emit("READY", currentRoom);
+    });
 
-    function atkSubmit(atk){
-        socket.emit("ATK_SUBMIT", atk);
-    }
+    selectBezos.on('pointerdown', function() {
+        socket.emit("CHARACTER_SUBMIT", 1, currentRoom);
+    });
+    selectMusk.on('pointerdown', function() {
+        socket.emit("CHARACTER_SUBMIT", 2, currentRoom);
+    });
+    selectZuck.on('pointerdown', function() {
+        socket.emit("CHARACTER_SUBMIT", 3, currentRoom);
+    });
+    selectCook.on('pointerdown', function() {
+        socket.emit("CHARACTER_SUBMIT", 4, currentRoom);
+    });
+
+    atk1.on('pointerdown', function() {
+        socket.emit("ATK_SUBMIT", 1, currentRoom);
+    });
+    atk2.on('pointerdown', function() {
+        socket.emit("ATK_SUBMIT", 2, currentRoom);
+    });
+    atk3.on('pointerdown', function() {
+        socket.emit("ATK_SUBMIT", 3, currentRoom);
+    });
+    atk4.on('pointerdown', function() {
+        socket.emit("ATK_SUBMIT", 4, currentRoom);
+    });
 
     victoryText.on('pointerdown', function() {
         //socket.emit("VICTORY_CONTINUE");
