@@ -21,8 +21,8 @@ let atk1 = PIXI.Sprite.from('../img/atk1.png');
 let atk2 = PIXI.Sprite.from('../img/atk2.png');
 let atk3 = PIXI.Sprite.from('../img/atk3.png');
 let atk4 = PIXI.Sprite.from('../img/atk4.png');
-let player1hp = new PIXI.Text("100");
-let player2hp = new PIXI.Text("100");
+let player1hp = new PIXI.Text("Player 1 HP: 100");
+let player2hp = new PIXI.Text("Player 2 HP: 100");
 let victoryText = new PIXI.Text("THIS PLAYER WINS!!!");
 let unlockText = new PIXI.Text("YOU'VE UNLOCKED A NEW FIGHTER!");
 
@@ -381,10 +381,21 @@ window.onload = function() {
         gameScene.visible = true;
         gameSetup();
     });
-
-    socket.on("battle", (message, p1hp, p2hp) => {
-        player1hp.text = p1hp;
-        player2hp.text = p2hp;
+    socket.on("p1damaged", (response) => {
+        player2hp.text = "Player 2 HP: " + response.msg;
+        alert(`You have dealt ${response} damage to your opponent!`);
+    });
+    socket.on("p1attacked", (response) => {
+        player1hp.text = "Player 1 HP: " + response.msg;
+        alert(`You were damaged for ${response} by your opponent!`);
+    });
+    socket.on("p2damaged", (response) => {
+        player2hp.text = "Player 2 HP: " + response.msg;
+        alert(`You were damaged for ${response} by your opponent!`);
+    });
+    socket.on("p2attacked", (response) => {
+        player1hp.text = "Player 1 HP: " + response.msg;
+        alert(`You have dealt ${response} damage to your opponent!`);
     });
 
     socket.on("change_scene_to_victory", (winner) => { // Use winner var (if needed, bring in more info from the server) to populate the victory scene with info/images/whatever

@@ -152,7 +152,7 @@ module.exports = Socket = (httpServer) => {
             let atk;
             let attack = "nothing";
             let damage = 0;
-            let net;
+
             if(players[socket.id] === p.Player1 && p.P1Ready == 0)
             {
                 playernum = 1;
@@ -184,6 +184,7 @@ module.exports = Socket = (httpServer) => {
                     break;
                 }
                 p.P2Health -= damage;
+                net = p.P2Health;
             }
 
             else if(players[socket.id] === p.Player2 && p.P2Ready == 0)
@@ -217,6 +218,7 @@ module.exports = Socket = (httpServer) => {
                         break;
                 }
                 p.P1Health -= damage;
+                net = p.P1Health;
             }
             console.log(`${players[socket.id]} uses ${attack}, dealing ${damage} damage!`);
 
@@ -229,9 +231,27 @@ module.exports = Socket = (httpServer) => {
             p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
             if (p.P1Ready === 1 && p.P2Ready === 1){
                 console.log(`Players have each selected their move in ${room}`);
-                socket.to(room).emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, p.P1Health, p.P2Health);
-                socket.emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`});
+                //socket.to(room).emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, p.P1Health, p.P2Health);
+                //socket.emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, p.P1Health, p.P2Health);
+                if(playernum === 2){
+                    socket.to(room).emit("p2hit", {msg: `${net}`});
+
+                }
+                else if(playernum === 1){
+                    socket.emit("p1hit", {msg: `${net}`});
+
+                }
                 const reset = rpc(`UPDATE GameSession SET P1Ready = 0, P2Ready = 0 WHERE RoomID = '${room}'`);
+            }
+            if (p.P1Health <= 0)
+            {
+                socket.emit("change_scene_to_victory", {msg: `Player 2 Wins`});
+                socket.to(room).emit("change_scene_to_victory", {msg: `Player 2 Wins`});
+            }
+            else if (p.P2Health <= 0)
+            {
+                socket.emit("change_scene_to_victory", {msg: `Player 1 Wins`});
+                socket.to(room).emit("change_scene_to_victory", {msg: `Player 1 Wins`});
             }
         });
 
