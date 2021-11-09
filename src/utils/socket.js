@@ -83,10 +83,24 @@ module.exports = Socket = (httpServer) => {
             console.log(userWins)
             if (userWins["Wins"] == 5 && numCharUnlock["NumCharUnlock"] == 0) {
                 //socket.emit("successful_join", {msg: `you have unlocked: `})
-                const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (parseInt(numCharUnlock, 10)+1) + " WHERE Username = \"" + players[socket.id] + "\";"
+                const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
                 const addCharUnlock = await (rpc(addCharUnlockQuery))
                 console.log(addCharUnlock)
-            //^^ that 4 time, but for 10, 15, 20 and update NumCharUnlock
+            }
+            if (userWins["Wins"] == 10 && numCharUnlock["NumCharUnlock"] == 1) {
+                const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
+                const addCharUnlock = await (rpc(addCharUnlockQuery))
+                console.log(addCharUnlock)
+            }
+            if (userWins["Wins"] == 15 && numCharUnlock["NumCharUnlock"] == 2) {
+                const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
+                const addCharUnlock = await (rpc(addCharUnlockQuery))
+                console.log(addCharUnlock)
+            }
+            if (userWins["Wins"] == 20 && numCharUnlock["NumCharUnlock"] == 3) {
+                const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
+                const addCharUnlock = await (rpc(addCharUnlockQuery))
+                console.log(addCharUnlock)
             }
             // Two possible options here:
             // Keep both players in a room for now and emit/reply specifically to each client's msgs by saving the socket id of sender and using io.sockets.socket(savedSocketId).emit(...)
