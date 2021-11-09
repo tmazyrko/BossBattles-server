@@ -1,21 +1,22 @@
 // PixiJS Game Canvas
 
-// Variable declaration for game & different scenes
+// Variable declaration for different scenes
 
 let app, matchScene, lobbyScene, selectScene, gameScene, victoryScene, unlockScene;
 
+let matchText = new PIXI.Text("MATCHMAKING");
 const create = PIXI.Sprite.from('../img/create-button.png');
 const join = PIXI.Sprite.from('../img/join-button.png');
 const lobby = PIXI.Sprite.from('../img/lobby-logo.png');
-let readyText = new PIXI.Text("PRESS ENTER WHEN READY!");
+let readyText = new PIXI.Text("THROW A PUNCH WHEN YOU'RE READY!");
+const punch = PIXI.Sprite.from('../img/punch-button.png');
 let playerText = new PIXI.Text("Waiting for you...");
 let opponentText = new PIXI.Text("Waiting for your opponent...");
-let selectText = new PIXI.Text("PLAYER SELECT");
-const bezos = PIXI.Sprite.from('../img/select-bezos.png');
-const musk = PIXI.Sprite.from('../img/select-musk.png');
-const zuck = PIXI.Sprite.from('../img/select-zuck.png');
-const cook = PIXI.Sprite.from('../img/select-cook.png');
-let gameText = new PIXI.Text("GAME SCENE");
+let selectText = new PIXI.Text("CHOOSE YOUR FIGHTER");
+const selectBezos = PIXI.Sprite.from('../img/select-bezos.png');
+const selectMusk = PIXI.Sprite.from('../img/select-musk.png');
+const selectZuck = PIXI.Sprite.from('../img/select-zuck.png');
+const selectCook = PIXI.Sprite.from('../img/select-cook.png');
 let atk1 = PIXI.Sprite.from('../img/atk1.png');
 let atk2 = PIXI.Sprite.from('../img/atk2.png');
 let atk3 = PIXI.Sprite.from('../img/atk3.png');
@@ -28,10 +29,8 @@ let unlockText = new PIXI.Text("YOU'VE UNLOCKED A NEW FIGHTER!");
 const init = function() {
     app = new PIXI.Application({
         backgroundColor: 0xffffff,
-        resolution: window.devicePixelRatio || 1
     });
 
-    app.renderer.resize(window.innerWidth, window.innerHeight);
     document.querySelector(".content-ctr").appendChild(app.view);
 
     matchScene = new PIXI.Container();
@@ -48,26 +47,51 @@ const init = function() {
     victoryScene.visible = false;
     unlockScene.visible = false;
 
-    app.stage.addChild(matchScene);
-    app.stage.addChild(lobbyScene);
-    app.stage.addChild(selectScene);
-    app.stage.addChild(gameScene);
-    app.stage.addChild(victoryScene);
-    app.stage.addChild(unlockScene);
+    window.addEventListener('resize', resize);
+
+    function resize() {
+        const parent = app.view.parentNode;
+
+        app.renderer.resize(parent.clientWidth, parent.clientHeight);
+
+        matchScene.position.set(app.screen.width / 2, app.screen.height / 2);
+        app.stage.addChild(matchScene);
+        lobbyScene.position.set(app.screen.width / 2, app.screen.height / 2);
+        app.stage.addChild(lobbyScene);
+        selectScene.position.set(app.screen.width / 2, app.screen.height / 2);
+        app.stage.addChild(selectScene);
+        gameScene.position.set(app.screen.width / 2, app.screen.height / 2);
+        app.stage.addChild(gameScene);
+        victoryScene.position.set(app.screen.width / 2, app.screen.height / 2);
+        app.stage.addChild(victoryScene);
+        unlockScene.position.set(app.screen.width / 2, app.screen.height / 2);
+        app.stage.addChild(unlockScene);
+    }
+
+    resize();
 }
 
 // Match scene setup function
 
 const matchSetup = function() {
-    matchScene.x = app.screen.width / 2;
-    matchScene.y = app.screen.height / 2;
+    matchText.anchor.set(0.5);
+    matchText.y = -240;
+    matchText.style = new PIXI.TextStyle(({
+        fill: 0x158233,
+        fontSize: 60,
+        fontFamily: 'Press Start 2P',
+    }));
 
-    create.scale.set(1.5, 1.5);
+    matchText.style.stroke = 0x000000;
+    matchText.style.strokeThickness = 7;
+
+    create.scale.set(1.4);
     create.anchor.set(0.5);
-    create.y = -50;
-    join.scale.set(1.5, 1.5);
+    create.y = -80;
+
+    join.scale.set(1.4);
     join.anchor.set(0.5);
-    join.y = 100;
+    join.y = 60;
 
     create.interactive = true;
     create.buttonMode = true;
@@ -76,24 +100,25 @@ const matchSetup = function() {
 
     matchScene.addChild(create);
     matchScene.addChild(join);
+    matchScene.addChild(matchText);
 
     let input = new PIXI.TextInput({
         input: {
             fontFamily: 'Press Start 2P',
             fontSize: '25px',
             padding: '15px',
-            width: '450px',
-            color: '#26272E',
+            width: '410px',
+            color: '#000',
         },
         box: {
-            default: {fill: 0xE8E9F3, rounded: 12, stroke: {color: 0xCBCEE0, width: 3}},
-            focused: {fill: 0xE1E3EE, rounded: 12, stroke: {color: 0xABAFC6, width: 3}},
-            disabled: {fill: 0xDBDBDB, rounded: 12}
+            default: {fill: 0xD1DDEB, rounded: 10, stroke: {color: 0x849AB4, width: 3}},
+            focused: {fill: 0xD1DDEB, rounded: 10, stroke: {color: 0x849AB4, width: 3}},
+            disabled: {fill: 0xD1DDEB, rounded: 10}
         }
     })
 
     input.placeholder = 'Enter room code';
-    input.y = 220;
+    input.y = 190;
     input.pivot.x = input.width / 2;
     input.pivot.y = input.height / 2;
     matchScene.addChild(input);
@@ -108,36 +133,36 @@ const matchSetup = function() {
 // Lobby scene setup function
 
 const lobbySetup = function() {
-    lobbyScene.x = app.screen.width / 2;
-    lobbyScene.y = app.screen.height / 2;
-
     lobbyScene.addChild(lobby);
-    lobby.scale.set(1.3, 1.3);
+    lobby.scale.set(0.9);
     lobby.anchor.set(0.5);
-    lobby.y = -350;
+    lobby.y = -270;
 
     readyText.anchor.set(0.5);
-    readyText.y = 80;
+    readyText.y = -70;
     readyText.style = new PIXI.TextStyle(({
-        fill: 0x000000,
-        fontSize: 50,
+        fill: 0x4F6F9E,
+        fontSize: 40,
         fontFamily: 'Press Start 2P',
         fontStyle: 'bold',
     }));
 
+    readyText.style.stroke = 0x000000;
+    readyText.style.strokeThickness = 6;
+
     playerText.anchor.set(0.5);
-    playerText.y = 350;
+    playerText.y = 270;
     playerText.style = new PIXI.TextStyle(({
         fill: 0x6F1515,
-        fontSize: 40,
+        fontSize: 35,
         fontFamily: 'Press Start 2P',
     }));
 
     opponentText.anchor.set(0.5);
-    opponentText.y = 450;
+    opponentText.y = 340;
     opponentText.style = new PIXI.TextStyle(({
         fill: 0x6F1515,
-        fontSize: 40,
+        fontSize: 35,
         fontFamily: 'Press Start 2P',
     }));
 
@@ -145,61 +170,72 @@ const lobbySetup = function() {
     lobbyScene.addChild(playerText);
     lobbyScene.addChild(opponentText);
 
-    document.addEventListener("keydown", readyUp);
+    lobbyScene.addChild(punch);
+    punch.scale.set(1.3);
+    punch.anchor.set(0.5);
+    punch.y = 100;
 
-    function readyUp(e) {
-        if (e.keyCode === 13) {
-            alert("ready!!!");
-            lobbyScene.visible = false;
-            selectScene.visible = true;
-            selectSetup();
-        }
-    }
+    punch.interactive = true;
+    punch.buttonMode = true;
+
+    punch.on('pointerdown', (event) => {
+       lobbyScene.visible = false;
+       selectScene.visible = true;
+       selectSetup();
+    });
 }
 
 // Select scene setup function
 
 const selectSetup = function() {
-    selectScene.x = app.screen.width / 2;
-    selectScene.y = app.screen.height / 2;
-
     selectText.anchor.set(0.5);
-    selectText.y = -350;
+    selectText.y = -300;
     selectText.style = new PIXI.TextStyle(({
-        fill: 0x000000,
-        fontSize: 70,
+        fill: 0x4F6F9E,
+        fontSize: 40,
         fontFamily: 'Press Start 2P',
         fontStyle: 'bold',
     }));
 
+    selectText.style.stroke = 0x000000;
+    selectText.style.strokeThickness = 6;
+
     selectScene.addChild(selectText);
 
-    bezos.scale.set(1.5, 1.5);
-    bezos.anchor.set(0.5);
-    bezos.y = 60;
-    bezos.x = -600;
-    musk.scale.set(1.5, 1.5);
-    musk.anchor.set(0.5);
-    musk.y = 60;
-    musk.x = -200;
-    zuck.scale.set(1.5, 1.5);
-    zuck.anchor.set(0.5);
-    zuck.y = 60;
-    zuck.x = 200;
-    cook.scale.set(1.5, 1.5);
-    cook.anchor.set(0.5);
-    cook.y = 60;
-    cook.x = 600;
+    selectBezos.anchor.set(0.5);
+    selectBezos.y = 60;
+    selectBezos.x = -450;
 
-    bezos.interactive = true;
-    bezos.buttonMode = true;
+    selectMusk.anchor.set(0.5);
+    selectMusk.y = 60;
+    selectMusk.x = -150;
 
-    selectScene.addChild(bezos);
-    selectScene.addChild(musk);
-    selectScene.addChild(zuck);
-    selectScene.addChild(cook);
+    selectZuck.anchor.set(0.5);
+    selectZuck.y = 60;
+    selectZuck.x = 150;
 
-    bezos.on('pointerdown', (event) => {
+    selectCook.anchor.set(0.5);
+    selectCook.y = 60;
+    selectCook.x = 450;
+
+    selectBezos.interactive = true;
+    selectBezos.buttonMode = true;
+
+    selectMusk.interactive = true;
+    selectMusk.buttonMode = true;
+
+    selectZuck.interactive = true;
+    selectZuck.buttonMode = true;
+
+    selectCook.interactive = true;
+    selectCook.buttonMode = true;
+
+    selectScene.addChild(selectBezos);
+    selectScene.addChild(selectMusk);
+    selectScene.addChild(selectZuck);
+    selectScene.addChild(selectCook);
+
+    selectBezos.on('pointerdown', (event) => {
         selectScene.visible = false;
         gameScene.visible = true;
         gameSetup();
@@ -209,31 +245,22 @@ const selectSetup = function() {
 // Game scene setup function
 
 const gameSetup = function() {
-    gameScene.x = app.screen.width / 2;
-    gameScene.y = app.screen.height / 2;
-
-    gameText.anchor.set(0.5);
-    gameText.y = -350;
-    gameText.style = new PIXI.TextStyle(({
-        fill: 0x00000,
-        fontSize: 40,
-        fontFamily: 'Press Start 2P',
-    }));
-
     atk1.y = 300;
-    atk1.x = -400;
+    atk1.x = -450;
     atk1.anchor.set(0.5);
+
     atk2.y = 300;
-    atk2.x = -100;
+    atk2.x = -150;
     atk2.anchor.set(0.5);
+
     atk3.y = 300;
-    atk3.x = 200;
+    atk3.x = 150;
     atk3.anchor.set(0.5);
+
     atk4.y = 300;
-    atk4.x = 500;
+    atk4.x = 450;
     atk4.anchor.set(0.5);
 
-    gameScene.addChild(gameText);
     gameScene.addChild(atk1);
     gameScene.addChild(atk2);
     gameScene.addChild(atk3);
@@ -241,6 +268,15 @@ const gameSetup = function() {
 
     atk1.interactive = true;
     atk1.buttonMode = true;
+
+    atk2.interactive = true;
+    atk2.buttonMode = true;
+
+    atk3.interactive = true;
+    atk3.buttonMode = true;
+
+    atk4.interactive = true;
+    atk4.buttonMode = true;
 
     atk1.on('pointerdown', (event) => {
         gameScene.visible = false;
@@ -252,16 +288,17 @@ const gameSetup = function() {
 // Victory scene setup function
 
 const victorySetup = function () {
-    victoryScene.x = app.screen.width / 2;
-    victoryScene.y = app.screen.height / 2;
-
     victoryText.anchor.set(0.5);
-    victoryText.y = -350;
+    victoryText.y = -300;
     victoryText.style = new PIXI.TextStyle(({
-        fill: 0x00000,
+        fill: 0x158233,
         fontSize: 40,
         fontFamily: 'Press Start 2P',
+        fontStyle: 'bold',
     }));
+
+    victoryText.style.stroke = 0x000000;
+    victoryText.style.strokeThickness = 6;
 
     victoryScene.addChild(victoryText);
 
@@ -279,16 +316,17 @@ const victorySetup = function () {
 // Unlock scene setup function
 
 const unlockSetup = function () {
-    unlockScene.x = app.screen.width / 2;
-    unlockScene.y = app.screen.height / 2;
-
     unlockText.anchor.set(0.5);
-    unlockText.y = -350;
+    unlockText.y = -300;
     unlockText.style = new PIXI.TextStyle(({
-        fill: 0x00000,
+        fill: 0x158233,
         fontSize: 40,
         fontFamily: 'Press Start 2P',
+        fontStyle: 'bold',
     }));
+
+    unlockText.style.stroke = 0x000000;
+    unlockText.style.strokeThickness = 6;
 
     unlockScene.addChild(unlockText);
 }
