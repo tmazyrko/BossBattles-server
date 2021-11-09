@@ -321,7 +321,7 @@ window.onload = function() {
         console.log(socket.id);
         console.log("Username: " + getCookie("username"));
         socket.emit("TX_USERNAME", getCookie("username"));
-        socket.emit("VICTORY_CONTINUE");
+        socket.emit("VICTORY_CONTINUE"); //move to victoryText after it is fully implemented
     });
 
     socket.on("successful_join", (response) => {
