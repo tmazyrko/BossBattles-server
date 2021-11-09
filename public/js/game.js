@@ -42,11 +42,11 @@ const init = function() {
     unlockScene = new PIXI.Container();
 
     //testing purposes: victory scene true
-    matchScene.visible = false;
+    matchScene.visible = true;
     lobbyScene.visible = false;
     selectScene.visible = false;
     gameScene.visible = false;
-    victoryScene.visible = true;
+    victoryScene.visible = false;
     unlockScene.visible = false;
 
     app.stage.addChild(matchScene);
@@ -321,6 +321,7 @@ window.onload = function() {
         console.log(socket.id);
         console.log("Username: " + getCookie("username"));
         socket.emit("TX_USERNAME", getCookie("username"));
+        socket.emit("VICTORY_CONTINUE");
     });
 
     socket.on("successful_join", (response) => {
@@ -355,6 +356,11 @@ window.onload = function() {
     function atkSubmit(atk){
         socket.emit("ATK_SUBMIT", atk);
     }
+
+    victoryText.on('pointerdown', function() {
+        //socket.emit("VICTORY_CONTINUE");
+        //console.log("hello");
+    });
 
 };
 
