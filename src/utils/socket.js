@@ -11,7 +11,7 @@ module.exports = Socket = (httpServer) => {
 
     let players = [];
     
-    io.on("connection", (socket) => { 
+    io.on("connection", (socket) => {
         console.log('New user connected. Socket ID: ' + socket.id);
 
         socket.on(SOCKET_ACTIONS.TX_USERNAME, (username) => {
@@ -86,7 +86,37 @@ module.exports = Socket = (httpServer) => {
             // Check for unlockables here
             // If nothing to unlock, send a command to client to go back to main menu scene
             // If there is something to unlock, send a command to client to go to the unlocks scene
-
+            //Check and see if an unlock happens and how many characters they have unlocked
+            //on continue from victory screen
+            console.log("ye")
+            const numCharUnlockQuery = "SELECT NumCharUnlock FROM PlayerInfo WHERE Username = \"" + players[socket.id] + "\";"
+            const numCharUnlock = await rpc(numCharUnlockQuery)
+            const userWinsQuery = "SELECT Wins FROM PlayerInfo WHERE Username = \"" + players[socket.id] + "\";"
+            const userWins = await rpc(userWinsQuery)
+            //console.log(userWins["count(Wins)"] + "user wins");
+            console.log(players[socket.id] + " has " + userWins["count(Wins)"] + " wins")
+            console.log(userWins)
+            if (userWins["Wins"] == 5 && numCharUnlock["NumCharUnlock"] == 0) {
+                //socket.emit("successful_join", {msg: `you have unlocked: `})
+                const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
+                const addCharUnlock = await (rpc(addCharUnlockQuery))
+                console.log(addCharUnlock)
+            }
+            if (userWins["Wins"] == 10 && numCharUnlock["NumCharUnlock"] == 1) {
+                const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
+                const addCharUnlock = await (rpc(addCharUnlockQuery))
+                console.log(addCharUnlock)
+            }
+            if (userWins["Wins"] == 15 && numCharUnlock["NumCharUnlock"] == 2) {
+                const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
+                const addCharUnlock = await (rpc(addCharUnlockQuery))
+                console.log(addCharUnlock)
+            }
+            if (userWins["Wins"] == 20 && numCharUnlock["NumCharUnlock"] == 3) {
+                const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
+                const addCharUnlock = await (rpc(addCharUnlockQuery))
+                console.log(addCharUnlock)
+            }
             // Two possible options here:
             // Keep both players in a room for now and emit/reply specifically to each client's msgs by saving the socket id of sender and using io.sockets.socket(savedSocketId).emit(...)
             // or
