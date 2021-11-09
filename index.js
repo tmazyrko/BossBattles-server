@@ -121,9 +121,7 @@ app.post('/login', async function(req, res){
         //await bcrypt.compare(password.toString(), user["Pwdhash"].toString())
         if (user["Pwdhash"] !== undefined && (await argon2.verify(user["Pwdhash"].toString(), password.toString()))) {
             req.session.user = {id: username, password: password};
-            res.redirect('/game');
-
-            console.log("success");
+            return res.redirect('/game');
         }
         return res.status(400).send("Invalid Credentials");
     } catch (err) {
