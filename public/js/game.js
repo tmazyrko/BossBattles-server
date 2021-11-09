@@ -98,11 +98,11 @@ const matchSetup = function() {
     input.pivot.y = input.height / 2;
     matchScene.addChild(input);
 
-    join.on('pointerdown', (e) => {
+    /*join.on('pointerdown', (e) => {
         matchScene.visible = false;
         lobbyScene.visible = true;
         lobbySetup();
-    });
+    });*/
 }
 
 // Lobby scene setup function
@@ -326,6 +326,13 @@ window.onload = function() {
         console.log(response.msg);
         currentRoom = response.room;
         console.log("Stored Room ID: " + currentRoom);
+        matchScene.visible = false;
+        lobbyScene.visible = true;
+        lobbySetup();
+    });
+
+    socket.on("failed_join", (response) => {
+        console.log(response.msg);
     });
 
     socket.on("change_scene_to_victory", (winner) => { // Use winner var (if needed, bring in more info from the server) to populate the victory scene with info/images/whatever
@@ -342,8 +349,9 @@ window.onload = function() {
     });
 
     join.on('pointerdown', function() {
-        socket.emit("JOIN_ROOM", "room1");
-        console.log(document.querySelector("input").value);
+        let roomcode = document.querySelector("input").value
+        socket.emit("JOIN_ROOM", roomcode);
+        console.log("Attempting to join room " + roomcode);
     });
 
     atk1.on('pointerdown', atkSubmit(1));
