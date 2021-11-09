@@ -1,3 +1,4 @@
+
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const SOCKET_ACTIONS = require("./socketActions");
@@ -19,14 +20,24 @@ module.exports = Socket = (httpServer) => {
         });
         
         socket.on(SOCKET_ACTIONS.JOIN_ROOM, async (room) => {  // must make the function async to be able to await rpcQuery !!!
-            if(room === "room1"){
-                io.in(socket.id).socketsJoin("room1");
+            const currentRooms = io.of('/').adapter.rooms;
+            console.log(currentRooms);
+            if(room > 100000 && room < 1000000){
+                if(!currentRooms.get(room)){
+                    io.in(socket.id).socketsJoin(room);
 
-                // EXAMPLE FOR USING rpcQuery !!!
-                //const result = await rpc("SELECT count(*) FROM PlayerInfo WHERE Username = \"test\";")  // await is necessary so that we wait for the result instead of jumping ahead
-                //console.error(result);
+                    // EXAMPLE FOR USING rpcQuery !!!
+                    //const result = await rpc("SELECT count(*) FROM PlayerInfo WHERE Username = \"test\";")  // await is necessary so that we wait for the result instead of jumping ahead
+                    //console.error(result);
 
-                socket.emit("successful_join", {msg: `you have joined ${room}`, room});
+                    socket.emit("successful_join", {msg: `You have joined ${room}.`, room});
+                }
+                else{
+                    socket.emit("failed_join", {msg: `Room ${room} does not exist!`, room});
+                }
+            }
+            else{
+                socket.emit("failed_join", {msg: `Improper room code format!`});
             }
         });
 
