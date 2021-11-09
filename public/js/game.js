@@ -41,11 +41,12 @@ const init = function() {
     victoryScene = new PIXI.Container();
     unlockScene = new PIXI.Container();
 
-    matchScene.visible = true;
+    //testing purposes: victory scene true
+    matchScene.visible = false;
     lobbyScene.visible = false;
     selectScene.visible = false;
     gameScene.visible = false;
-    victoryScene.visible = false;
+    victoryScene.visible = true;
     unlockScene.visible = false;
 
     app.stage.addChild(matchScene);
@@ -341,8 +342,8 @@ window.onload = function() {
         socket.emit("ATK_SUBMIT", atk);
     }
 
-});
 };
+
 
 
 
