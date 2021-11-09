@@ -7,10 +7,16 @@ module.exports = Socket = (httpServer) => {
 
     const server = createServer(httpServer);
     const io = new Server(server, { /* options */ });
+
+    let players = [];
     
     io.on("connection", (socket) => { 
         console.log('New user connected. Socket ID: ' + socket.id);
 
+        socket.on(SOCKET_ACTIONS.TX_USERNAME, (username) => {
+            players[socket.id] = username;
+            console.log(players);
+        });
         
         socket.on(SOCKET_ACTIONS.JOIN_ROOM, async (room) => {  // must make the function async to be able to await rpcQuery !!!
             if(room === "room1"){
@@ -73,7 +79,9 @@ module.exports = Socket = (httpServer) => {
         });
 
         socket.on("disconnect", (reason) => {
-            console.log(`User ${socket.id} has disconnected. Reason: ` + reason)
+            console.log(`User ${socket.id} has disconnected. Reason: ` + reason);
+            delete players[socket.id];
+            console.log(players);
         });
 
       
