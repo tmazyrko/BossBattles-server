@@ -13,27 +13,35 @@ module.exports = Socket = (httpServer) => {
     let players = [];
 
 
-    io.on("connection", (socket) => {
+    io.on("connection", async (socket) => {
         console.log('New user connected. Socket ID: ' + socket.id);
 
         async function stockCheck(ticker){
-            let stock = await rpc(`SELECT * FROM Stocks WHERE CompanyName = '${ticker}'`);
+            let stock = await rpc(`SELECT CompanyName, CAST(Price AS CHAR) AS Price, LastChecked, CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${ticker}'`);
             let date = new Date().getTime() + (1 * 24 * 60 * 60 * 1000);
-            //if (date > stock.lastChecked) {
+            if (date > parseInt(stock.LastChecked) + 600000) {  // Only checks if data is older than 10 minutes
                 const newStockData = await axios.get(`https://query1.finance.yahoo.com/v6/finance/quote?symbols=${ticker}`);
                 const percentChange = newStockData.data.quoteResponse.result[0].regularMarketChangePercent;
                 const marketPrice = newStockData.data.quoteResponse.result[0].regularMarketPrice;
-                const updateStock = await rpc(`UPDATE Stocks SET LastChecked = '${date}', Price = '${marketPrice}', PercentChange = '${percentChange}' WHERE CompanyName = '${ticker}'`);
-            //}
-            //else if (date < stock.lastChecked) {
-
-            //}
-            console.log(`${percentChange}`);
+                await rpc(`UPDATE Stocks SET LastChecked = '${date}', Price = '${marketPrice}', PercentChange = '${percentChange}' WHERE CompanyName = '${ticker}'`);
+                stock = await rpc(`SELECT CompanyName, CAST(Price AS CHAR) AS Price, LastChecked, CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${ticker}'`);
+                console.log("Updated data for stock: " + ticker)
+                return stock;
+            }
+            else{
+                console.log("Stock data for " + ticker + " updated recently, returning stored data")
+                return stock;
+            }
         }
-        stockCheck('AMZN');
-        stockCheck('TSLA');
-        stockCheck('FB');
-        stockCheck('AAPL');
+        let amznTest = await stockCheck('AMZN');
+        console.log(amznTest)
+        let tslaTest = await stockCheck('TSLA');
+        console.log(tslaTest)
+        let fbTest = await stockCheck('FB');
+        console.log(fbTest)
+        let aaplTest = await stockCheck('AAPL');
+        console.log(aaplTest)
+
         socket.on(SOCKET_ACTIONS.TX_USERNAME, (username) => {
             players[socket.id] = username;
             console.log(players);
