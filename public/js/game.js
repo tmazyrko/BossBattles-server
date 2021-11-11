@@ -351,9 +351,10 @@ window.onload = function() {
     // SOCKET - INCOMING MESSAGES FROM SERVER
     socket.on("connect", () => {
         console.log(socket.id);
-        console.log("Username: " + getCookie("username"));
-        socket.emit("TX_USERNAME", getCookie("username"));
-        socket.emit("VICTORY_CONTINUE"); //move to victoryText after it is fully implemented
+        const user = getCookie("username")
+        console.log("Username: " + user);
+        socket.emit("TX_USERNAME", user);
+        //socket.emit("VICTORY_CONTINUE"); //move to victoryText after it is fully implemented
     });
 
     socket.on("successful_join", (response) => {

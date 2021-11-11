@@ -9,41 +9,16 @@ module.exports = Socket = (httpServer) => {
     const server = createServer(httpServer);
     const io = new Server(server, { /* options */ });
 
-    let players = [];
+    let players = {};
 
 
     io.on("connection", async (socket) => {
         console.log('New user connected. Socket ID: ' + socket.id);
 
-        async function stockCheck(ticker){
-            let stock = await rpc(`SELECT CompanyName, CAST(Price AS CHAR) AS Price, LastChecked, CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${ticker}'`);
-            let date = new Date().getTime() + (1 * 24 * 60 * 60 * 1000);
-            if (date > parseInt(stock.LastChecked) + 600000) {  // Only checks if data is older than 10 minutes
-                const newStockData = await axios.get(`https://query1.finance.yahoo.com/v6/finance/quote?symbols=${ticker}`);
-                const percentChange = newStockData.data.quoteResponse.result[0].regularMarketChangePercent;
-                const marketPrice = newStockData.data.quoteResponse.result[0].regularMarketPrice;
-                await rpc(`UPDATE Stocks SET LastChecked = '${date}', Price = '${marketPrice}', PercentChange = '${percentChange}' WHERE CompanyName = '${ticker}'`);
-                stock = await rpc(`SELECT CompanyName, CAST(Price AS CHAR) AS Price, LastChecked, CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${ticker}'`);
-                console.log("Updated data for stock: " + ticker)
-                return stock;
-            }
-            else{
-                console.log("Stock data for " + ticker + " updated recently, returning stored data")
-                return stock;
-            }
-        }
-        let amznTest = await stockCheck('AMZN');
-        console.log(amznTest)
-        let tslaTest = await stockCheck('TSLA');
-        console.log(tslaTest)
-        let fbTest = await stockCheck('FB');
-        console.log(fbTest)
-        let aaplTest = await stockCheck('AAPL');
-        console.log(aaplTest)
-
-        socket.on(SOCKET_ACTIONS.TX_USERNAME, (username) => {
+        socket.on(SOCKET_ACTIONS.TX_USERNAME, async (username) => {
+            console.log("Received username " + username + " for socket ID " + socket.id)
             players[socket.id] = username;
-            console.log(players);
+            console.log("Socket ID - Username List: " + JSON.stringify(players));
         });
         
         socket.on(SOCKET_ACTIONS.JOIN_ROOM, async (room) => {  // must make the function async to be able to await rpcQuery !!!
@@ -103,11 +78,11 @@ module.exports = Socket = (httpServer) => {
             let p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
             if(players[socket.id] === p.Player1)
             {
-                const ready = await rpc(`UPDATE GameSession SET P1Ready = 1 WHERE RoomID = '${room}'`);
+                await rpc(`UPDATE GameSession SET P1Ready = 1 WHERE RoomID = '${room}'`);
             }
-            if(players[socket.id] === p.Player2)
+            else if(players[socket.id] === p.Player2)
             {
-                const ready = await rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
+                await rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
             }
             p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
             if (p.P1Ready === 1 && p.P2Ready === 1){
@@ -308,9 +283,34 @@ module.exports = Socket = (httpServer) => {
         socket.on("disconnect", (reason) => {
             console.log(`User ${socket.id} has disconnected. Reason: ` + reason);
             delete players[socket.id];
-            console.log("Socket ID - Username List: " + players);
+            console.log("Socket ID - Username List: " + JSON.stringify(players));
         });
 
+        async function stockCheck(ticker){
+            let stock = await rpc(`SELECT CompanyName, CAST(Price AS CHAR) AS Price, LastChecked, CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${ticker}'`);
+            let date = new Date().getTime() + (1 * 24 * 60 * 60 * 1000);
+            if (date > parseInt(stock.LastChecked) + 600000) {  // Only checks if data is older than 10 minutes
+                const newStockData = await axios.get(`https://query1.finance.yahoo.com/v6/finance/quote?symbols=${ticker}`);
+                const percentChange = newStockData.data.quoteResponse.result[0].regularMarketChangePercent;
+                const marketPrice = newStockData.data.quoteResponse.result[0].regularMarketPrice;
+                await rpc(`UPDATE Stocks SET LastChecked = '${date}', Price = '${marketPrice}', PercentChange = '${percentChange}' WHERE CompanyName = '${ticker}'`);
+                stock = await rpc(`SELECT CompanyName, CAST(Price AS CHAR) AS Price, LastChecked, CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${ticker}'`);
+                console.log("Updated data for stock: " + ticker)
+                return stock;
+            }
+            else{
+                console.log("Stock data for " + ticker + " updated recently, returning stored data")
+                return stock;
+            }
+        }
+        /*let amznTest = await stockCheck('AMZN');
+        console.log(amznTest)
+        let tslaTest = await stockCheck('TSLA');
+        console.log(tslaTest)
+        let fbTest = await stockCheck('FB');
+        console.log(fbTest)
+        let aaplTest = await stockCheck('AAPL');
+        console.log(aaplTest)*/
       
 
     });
