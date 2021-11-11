@@ -171,7 +171,7 @@ module.exports = Socket = (httpServer) => {
             let playernum = 0;
             let atk;
             let attack = "nothing";
-            let damage = 0;
+            let damage = 0.00;
             let net;
             if(players[socket.id] === p.Player1 && p.P1Ready == 0)
             {
@@ -201,7 +201,9 @@ module.exports = Socket = (httpServer) => {
                     damage = Math.round(damage);
                     break;
                 }
-                damage += 5 * bonus.PercentChange;
+                damage += 5.00 * bonus.PercentChange;
+                console.log(bonus.PercentChange);
+                console.log(atk.Stock);
                 p.P2Health -= damage;
             }
 
@@ -209,32 +211,33 @@ module.exports = Socket = (httpServer) => {
             {
                 playernum = 2;
                 const ready = rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
+                const atk = await rpc(`SELECT FighterMove1, FighterMove2, FighterMove3, FighterMove4, Stock FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
+                const bonus = await rpc(`SELECT PercentChange FROM Stocks WHERE CompanyName = '${atk.Stock}'`);
                 switch (chosen_attack) {
                     case(1):
-                        atk = await rpc(`SELECT FighterMove1 FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
                         attack = atk.FighterMove1;
                         damage = 25 * (Math.random() * (1.25 - 0.75) + 0.75);
                         damage = Math.round(damage);
                         break;
                     case(2):
-                        atk = await rpc(`SELECT FighterMove2 FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
                         attack = atk.FighterMove2;
                         damage = 10 * (Math.random() * (4 - 1) + 1);
                         damage = Math.round(damage);
                         break;
                     case(3):
-                        atk = await rpc(`SELECT FighterMove3 FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
                         attack = atk.FighterMove3;
                         damage = 5 * (Math.random() * (10 - 1) + 1);
                         damage = Math.round(damage);
                         break;
                     case(4):
-                        atk = await rpc(`SELECT FighterMove4 FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
                         attack = atk.FighterMove4;
                         damage = 20 * (Math.random() * (1.1 - 0.9) + 0.9);
                         damage = Math.round(damage);
                         break;
                 }
+                damage += 5.00 * bonus.PercentChange;
+                console.log(bonus.PercentChange);
+                console.log(atk.Stock);
                 p.P1Health -= damage;
             }
             console.log(`${players[socket.id]} uses ${attack}, dealing ${damage} damage!`);
