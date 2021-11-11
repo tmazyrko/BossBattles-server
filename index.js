@@ -86,8 +86,8 @@ app.post('/register', async function(req, res){
         const encryptedPassword = await argon2.hash(password, 10)
 
         // Create user in our database
-        //const createUserQuery = "INSERT INTO PlayerInfo VALUES (\"" + username + "\", 0, \"Elon Musk\", 0, 0, 0, \"" + encryptedPassword + "\"" + ", 0);"
-        //await rpc(createUserQuery)
+        const createUserQuery = "INSERT INTO PlayerInfo VALUES (\"" + username + "\", 0, \"Elon Musk\", 0, 0, 0, \"" + encryptedPassword + "\"" + ", 0);"
+        await rpc(createUserQuery)
 
         const newUser = {id: username, password: password};
         req.session.user = newUser;
