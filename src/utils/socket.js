@@ -160,7 +160,9 @@ module.exports = Socket = (httpServer) => {
                 playernum = 1;
                 const ready = await rpc(`UPDATE GameSession SET P1Ready = 1 WHERE RoomID = '${room}'`);
                 const atk = await rpc(`SELECT FighterMove1, FighterMove2, FighterMove3, FighterMove4, Stock FROM FighterInfo WHERE FighterName = '${p.P1Fighter}'`);
-                const bonus = await rpc(`SELECT PercentChange FROM Stocks WHERE CompanyName = '${atk.Stock}'`);
+                let bonusq = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${atk.Stock}'`);
+                console.log("Bonus " + bonusq.PercentChange)
+                let bonus = parseFloat(bonusq.PercentChange);
                 switch (chosen_attack) {
                 case(1):
                     attack = atk.FighterMove1;
@@ -183,8 +185,8 @@ module.exports = Socket = (httpServer) => {
                     damage = Math.round(damage);
                     break;
                 }
-                damage += 5.00 * bonus.PercentChange;
-                console.log(bonus.PercentChange);
+                damage += 5.00 * bonus;
+                console.log(bonus);
                 console.log(atk.Stock);
                 p.P2Health -= damage;
             }
@@ -194,7 +196,9 @@ module.exports = Socket = (httpServer) => {
                 playernum = 2;
                 const ready = await rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
                 const atk = await rpc(`SELECT FighterMove1, FighterMove2, FighterMove3, FighterMove4, Stock FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
-                const bonus = await rpc(`SELECT PercentChange FROM Stocks WHERE CompanyName = '${atk.Stock}'`);
+                let bonusq = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${atk.Stock}'`);
+                console.log("Bonus " + bonusq.PercentChange)
+                let bonus = parseFloat(bonusq.PercentChange);
                 switch (chosen_attack) {
                     case(1):
                         attack = atk.FighterMove1;
@@ -217,8 +221,8 @@ module.exports = Socket = (httpServer) => {
                         damage = Math.round(damage);
                         break;
                 }
-                damage += 5.00 * bonus.PercentChange;
-                console.log(bonus.PercentChange);
+                damage += 5.00 * bonus;
+                console.log(bonus);
                 console.log(atk.Stock);
                 p.P1Health -= damage;
             }
