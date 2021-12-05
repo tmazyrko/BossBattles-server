@@ -67,3 +67,20 @@ body {
 .hero * {
     z-index: 5;
 }
+
+/* Leaderboard Page */
+
+.hero .content-ctr #board-div {
+    width: 73%;
+    height: 70%;
+    padding: 15px;
+    background: #fff;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#board-div .board-logo {
+    width: 50%;
+}

@@ -91,6 +91,7 @@ module.exports = Socket = (httpServer) => {
             }
         });
 
+        let playerChoices = [];
         socket.on(SOCKET_ACTIONS.CHARACTER_SUBMIT, async(character, room) => {
             let p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter FROM GameSession WHERE RoomID = '${room}'`);
             let playernum = 0;
@@ -128,15 +129,25 @@ module.exports = Socket = (httpServer) => {
                 {
                     const ready = rpc(`UPDATE GameSession SET P2Fighter = '${c.FighterName}' WHERE RoomID = '${room}'`);
                 }
-            p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
+
+            p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter FROM GameSession WHERE RoomID = '${room}'`);
+
             if (p.P1Ready === 1 && p.P2Ready === 1){
+                playerChoices.push(p.P1Fighter);
+                playerChoices.push(p.P2Fighter);
+
+                socket.to(room).emit("show_opponent", {msg: `Players are ${playerChoices}`}, playerChoices);
+                socket.emit("show_opponent", {msg: `Players chosen are ${playerChoices}`}, playerChoices);
+
                 console.log(`Players have selected characters in ${room}`);
                 socket.to(room).emit("select_char", {msg: `Battle ${room} is ready!`});
                 socket.emit("select_char", {msg: `Battle ${room} is ready!`});
+
                 const reset = rpc(`UPDATE GameSession SET P1Ready = 0, P2Ready = 0 WHERE RoomID = '${room}'`);
             }
         });
 
+        let winner;
         socket.on(SOCKET_ACTIONS.ATK_SUBMIT, async (chosen_attack, room) => {
             // commit players move to this room's table
             // check if both players have already attacked
@@ -152,7 +163,7 @@ module.exports = Socket = (httpServer) => {
             let atk;
             let attack = "nothing";
             let damage = 0;
-            let net;
+
             if(players[socket.id] === p.Player1 && p.P1Ready == 0)
             {
                 playernum = 1;
@@ -218,6 +229,7 @@ module.exports = Socket = (httpServer) => {
                 }
                 p.P1Health -= damage;
             }
+
             console.log(`${players[socket.id]} uses ${attack}, dealing ${damage} damage!`);
 
             if (playernum === 1) {
@@ -226,11 +238,32 @@ module.exports = Socket = (httpServer) => {
             else if (playernum === 2) {
                 const loss = rpc(`UPDATE GameSession SET P1Health = '${p.P1Health}' WHERE RoomID = '${room}'`);
             }
-            p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
-            if (p.P1Ready === 1 && p.P2Ready === 1){
+
+            p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter, P1Health, P2Health FROM GameSession WHERE RoomID = '${room}'`);
+
+            if (p.P1Health > 0 && p.P2Health <= 0) {
+                winner = "Player 1";
+            }
+            else if (p.P2Health > 0 && p.P1Health <= 0) {
+                winner = "Player 2";
+            }
+
+            if (p.P1Ready === 1 && p.P2Ready === 1) {
                 console.log(`Players have each selected their move in ${room}`);
                 socket.to(room).emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, p.P1Health, p.P2Health);
                 socket.emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`});
+
+                switch (winner) {
+                    case("Player 1"):
+                        socket.to(room).emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1");
+                        socket.emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1");
+                        break;
+                    case("Player 2"):
+                        socket.to(room).emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2");
+                        socket.emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2");
+                        break;
+                }
+
                 const reset = rpc(`UPDATE GameSession SET P1Ready = 0, P2Ready = 0 WHERE RoomID = '${room}'`);
             }
         });

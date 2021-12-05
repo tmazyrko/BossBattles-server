@@ -23,8 +23,12 @@ let atk3 = PIXI.Sprite.from('../img/atk3.png');
 let atk4 = PIXI.Sprite.from('../img/atk4.png');
 let player1hp = new PIXI.Text("100");
 let player2hp = new PIXI.Text("100");
-let victoryText = new PIXI.Text("THIS PLAYER WINS!!!");
+let victoryText = new PIXI.Text("WINNER IS...");
 let unlockText = new PIXI.Text("YOU'VE UNLOCKED A NEW FIGHTER!");
+let spriteBezos = PIXI.Sprite.from('../img/sprite-bezos.png');
+let spriteMusk = PIXI.Sprite.from('../img/sprite-musk.png');
+let spriteZuck = PIXI.Sprite.from('../img/sprite-zuck.png');
+let spriteCook = PIXI.Sprite.from('../img/sprite-cook.png');
 
 // Initial load in function
 
@@ -72,6 +76,7 @@ const init = function() {
     }
 
     resize();
+    matchSetup();
 }
 
 // Match scene setup function
@@ -282,10 +287,21 @@ const gameSetup = function() {
 
 // Victory scene setup function
 
-const victorySetup = function () {
+const victorySetup = function (winner) {
+    let winnerText = new PIXI.Text(winner);
+
     victoryText.anchor.set(0.5);
+    winnerText.anchor.set(0.5);
     victoryText.y = -300;
+    winnerText.y = 300;
     victoryText.style = new PIXI.TextStyle(({
+        fill: 0x158233,
+        fontSize: 40,
+        fontFamily: 'Press Start 2P',
+        fontStyle: 'bold',
+    }));
+
+    winnerText.style = new PIXI.TextStyle(({
         fill: 0x158233,
         fontSize: 40,
         fontFamily: 'Press Start 2P',
@@ -294,8 +310,11 @@ const victorySetup = function () {
 
     victoryText.style.stroke = 0x000000;
     victoryText.style.strokeThickness = 6;
+    winnerText.style.stroke = 0x000000;
+    winnerText.style.strokeThickness = 6;
 
     victoryScene.addChild(victoryText);
+    victoryScene.addChild(winnerText);
 
     victoryText.interactive = true;
     victoryText.buttonMode = true;
@@ -340,7 +359,6 @@ function getCookie(name) {
 window.onload = function() {
 
     init();
-    matchSetup();
 
     // Socket code
 
@@ -376,7 +394,59 @@ window.onload = function() {
         selectSetup();
     });
 
-    socket.on("select_char", (response) => {
+    socket.on("show_opponent", (message, playerChoices) => {
+        console.log(message.msg);
+        console.log(playerChoices);
+
+        switch (playerChoices[0]) {
+            case('Jeff Bezos'):
+                spriteBezos.anchor.set(0.5);
+                spriteBezos.x = -100;
+                gameScene.addChild(spriteBezos);
+                break;
+            case('Elon Musk'):
+                spriteMusk.anchor.set(0.5);
+                spriteMusk.x = -100;
+                gameScene.addChild(spriteMusk);
+                break;
+            case('Mark Zuckerberg'):
+                spriteZuck.anchor.set(0.5);
+                spriteZuck.x = -100;
+                gameScene.addChild(spriteZuck);
+                break;
+            case('Tim Cook'):
+                spriteCook.anchor.set(0.5);
+                spriteCook.x = -100;
+                gameScene.addChild(spriteCook);
+                break;
+        }
+
+        switch (playerChoices[1]) {
+            case('Jeff Bezos'):
+                spriteBezos.anchor.set(0.5);
+                spriteBezos.x = 100;
+                gameScene.addChild(spriteBezos);
+                break;
+            case('Elon Musk'):
+                spriteMusk.anchor.set(0.5);
+                spriteMusk.x = 100;
+                gameScene.addChild(spriteMusk);
+                break;
+            case('Mark Zuckerberg'):
+                spriteZuck.anchor.set(0.5);
+                spriteZuck.x = 100;
+                gameScene.addChild(spriteZuck);
+                break;
+            case('Tim Cook'):
+                spriteCook.anchor.set(0.5);
+                spriteCook.x = 100;
+                gameScene.addChild(spriteCook);
+                break;
+        }
+    });
+
+    socket.on("select_char", (message) => {
+        console.log(message.msg);
         selectScene.visible = false;
         gameScene.visible = true;
         gameSetup();
@@ -387,10 +457,12 @@ window.onload = function() {
         player2hp.text = p2hp;
     });
 
-    socket.on("change_scene_to_victory", (winner) => { // Use winner var (if needed, bring in more info from the server) to populate the victory scene with info/images/whatever
+    socket.on("setup_victory", (message, winner) => {
+        console.log(message.msg);
+        victorySetup(winner);
+
         gameScene.visible = false;
         victoryScene.visible = true;
-        victorySetup();
     });
 
 
@@ -413,6 +485,7 @@ window.onload = function() {
     selectBezos.on('pointerdown', function() {
         socket.emit("CHARACTER_SUBMIT", 1, currentRoom);
     });
+
     selectMusk.on('pointerdown', function() {
         socket.emit("CHARACTER_SUBMIT", 2, currentRoom);
     });

@@ -130,6 +130,11 @@ app.post('/login', async function(req, res){
     // Our login logic ends here
 });
 
+// Leaderboard
+app.get('/leaderboard', (req, res) => {
+    res.sendFile(__dirname + '/src/leaderboard.html');
+});
+
 // Start Express server
 server.listen(process.env.SERVER_PORT, () => {
     console.log(`Server now running at ${process.env.SERVER_PORT}`);
