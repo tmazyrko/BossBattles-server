@@ -13,6 +13,10 @@ const punch = PIXI.Sprite.from('../img/punch-button.png');
 let playerText = new PIXI.Text("Waiting for you...");
 let opponentText = new PIXI.Text("Waiting for your opponent...");
 let selectText = new PIXI.Text("CHOOSE YOUR FIGHTER");
+let bezosText = new PIXI.Text("0");
+let muskText = new PIXI.Text("0");
+let zuckText = new PIXI.Text("0");
+let cookText = new PIXI.Text("0");
 const selectBezos = PIXI.Sprite.from('../img/select-bezos.png');
 const selectMusk = PIXI.Sprite.from('../img/select-musk.png');
 const selectZuck = PIXI.Sprite.from('../img/select-zuck.png');
@@ -29,6 +33,10 @@ let spriteBezos = PIXI.Sprite.from('../img/sprite-bezos.png');
 let spriteMusk = PIXI.Sprite.from('../img/sprite-musk.png');
 let spriteZuck = PIXI.Sprite.from('../img/sprite-zuck.png');
 let spriteCook = PIXI.Sprite.from('../img/sprite-cook.png');
+let bezosNum = 0;
+let muskNum = 0;
+let zuckNum = 0;
+let cookNum = 0;
 
 // Initial load in function
 
@@ -198,11 +206,67 @@ const selectSetup = function() {
         fontFamily: 'Press Start 2P',
         fontStyle: 'bold',
     }));
+    console.log(bezosNum);
+    bezosText.text = bezosNum;
+    bezosText.anchor.set(0.5);
+    bezosText.y = 225;
+    bezosText.x = -450;
+    bezosText.style = new PIXI.TextStyle(({
+        fill: 0x4F6F9E,
+        fontSize: 40,
+        fontFamily: 'Press Start 2P',
+        fontStyle: 'bold',
+    }));
+    muskText.text = muskNum;
+    muskText.anchor.set(0.5);
+    muskText.y = 225;
+    muskText.x = -150;
+    muskText.style = new PIXI.TextStyle(({
+        fill: 0x4F6F9E,
+        fontSize: 40,
+        fontFamily: 'Press Start 2P',
+        fontStyle: 'bold',
+    }));
+    zuckText.text = zuckNum;
+    zuckText.anchor.set(0.5);
+    zuckText.y = 225;
+    zuckText.x = 150;
+    zuckText.style = new PIXI.TextStyle(({
+        fill: 0x4F6F9E,
+        fontSize: 40,
+        fontFamily: 'Press Start 2P',
+        fontStyle: 'bold',
+    }));
+    cookText.text = cookNum;
+    cookText.anchor.set(0.5);
+    cookText.y = 225;
+    cookText.x = 450;
+    cookText.style = new PIXI.TextStyle(({
+        fill: 0x4F6F9E,
+        fontSize: 40,
+        fontFamily: 'Press Start 2P',
+        fontStyle: 'bold',
+    }));
+
+
 
     selectText.style.stroke = 0x000000;
     selectText.style.strokeThickness = 6;
+    bezosText.style.stroke = 0x000000;
+    bezosText.style.strokeThickness = 6;
+    muskText.style.stroke = 0x000000;
+    muskText.style.strokeThickness = 6;
+    zuckText.style.stroke = 0x000000;
+    zuckText.style.strokeThickness = 6;
+    cookText.style.stroke = 0x000000;
+    cookText.style.strokeThickness = 6;
+
 
     selectScene.addChild(selectText);
+    selectScene.addChild(bezosText);
+    selectScene.addChild(muskText);
+    selectScene.addChild(zuckText);
+    selectScene.addChild(cookText);
 
     selectBezos.anchor.set(0.5);
     selectBezos.y = 60;
@@ -392,6 +456,13 @@ window.onload = function() {
         lobbyScene.visible = false;
         selectScene.visible = true;
         selectSetup();
+    });
+
+    socket.on("stock_data", (amzn, tsla, fb, aapl) => {
+        bezosNum = amzn;
+        muskNum = tsla;
+        zuckNum = fb;
+        cookNum = aapl;
     });
 
     socket.on("show_opponent", (message, playerChoices) => {

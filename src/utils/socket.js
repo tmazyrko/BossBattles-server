@@ -3,6 +3,8 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const SOCKET_ACTIONS = require("./socketActions");
 const rpc = require("./rpcQuery.js");
+const axios = require("axios");
+
 
 module.exports = Socket = (httpServer) => {
 
@@ -84,7 +86,13 @@ module.exports = Socket = (httpServer) => {
             }
             p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
             if (p.P1Ready === 1 && p.P2Ready === 1){
+                let amzn = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'AMZN'`);
+                let tsla = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'TSLA'`);
+                let fb = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'FB'`);
+                let aapl = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'AAPL'`);
                 console.log(`Players ready in ${room}`);
+                socket.to(room).emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
+                socket.emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
                 socket.to(room).emit("players_ready", {msg: `Room ${room} is ready!`});
                 socket.emit("players_ready", {msg: `Room ${room} is ready!`});
                 const reset = rpc(`UPDATE GameSession SET P1Ready = 0, P2Ready = 0 WHERE RoomID = '${room}'`);
@@ -148,6 +156,7 @@ module.exports = Socket = (httpServer) => {
         });
 
         let winner;
+
         socket.on(SOCKET_ACTIONS.ATK_SUBMIT, async (chosen_attack, room) => {
             // commit players move to this room's table
             // check if both players have already attacked
@@ -162,93 +171,89 @@ module.exports = Socket = (httpServer) => {
             let playernum = 0;
             let atk;
             let attack = "nothing";
-            let damage = 0;
-
+            let damage = 0.00;
+            let net;
             if(players[socket.id] === p.Player1 && p.P1Ready == 0)
             {
                 playernum = 1;
-                const ready = rpc(`UPDATE GameSession SET P1Ready = 1 WHERE RoomID = '${room}'`);
+                const ready = await rpc(`UPDATE GameSession SET P1Ready = 1 WHERE RoomID = '${room}'`);
+                const atk = await rpc(`SELECT FighterMove1, FighterMove2, FighterMove3, FighterMove4, Stock FROM FighterInfo WHERE FighterName = '${p.P1Fighter}'`);
+                let bonusq = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${atk.Stock}'`);
+                console.log("Bonus " + bonusq.PercentChange)
+                let bonus = parseFloat(bonusq.PercentChange);
                 switch (chosen_attack) {
-                case(1):
-                    atk = await rpc(`SELECT FighterMove1 FROM FighterInfo WHERE FighterName = '${p.P1Fighter}'`);
-                    attack = atk.FighterMove1;
-                    damage = 25 * (Math.random() * (1.25 - 0.75) + 0.75);
-                    damage = Math.round(damage);
-                    break;
-                case(2):
-                    atk = await rpc(`SELECT FighterMove2 FROM FighterInfo WHERE FighterName = '${p.P1Fighter}'`);
-                    attack = atk.FighterMove2;
-                    damage = 10 * (Math.random() * (4 - 1) + 1);
-                    damage = Math.round(damage);
-                    break;
-                case(3):
-                    atk = await rpc(`SELECT FighterMove3 FROM FighterInfo WHERE FighterName = '${p.P1Fighter}'`);
-                    attack = atk.FighterMove3;
-                    damage = 5 * (Math.random() * (10 - 1) + 1);
-                    damage = Math.round(damage);
-                    break;
-                case(4):
-                    atk = await rpc(`SELECT FighterMove4 FROM FighterInfo WHERE FighterName = '${p.P1Fighter}'`);
-                    attack = atk.FighterMove4;
-                    damage = 20 * (Math.random() * (1.1 - 0.9) + 0.9);
-                    damage = Math.round(damage);
-                    break;
+                    case(1):
+                        attack = atk.FighterMove1;
+                        damage = 25 * (Math.random() * (1.25 - 0.75) + 0.75);
+                        damage = Math.round(damage);
+                        break;
+                    case(2):
+                        attack = atk.FighterMove2;
+                        damage = 10 * (Math.random() * (4 - 1) + 1);
+                        damage = Math.round(damage);
+                        break;
+                    case(3):
+                        attack = atk.FighterMove3;
+                        damage = 5 * (Math.random() * (10 - 1) + 1);
+                        damage = Math.round(damage);
+                        break;
+                    case(4):
+                        attack = atk.FighterMove4;
+                        damage = 20 * (Math.random() * (1.1 - 0.9) + 0.9);
+                        damage = Math.round(damage);
+                        break;
                 }
+                damage += 5.00 * bonus;
+                console.log(bonus);
+                console.log(atk.Stock);
                 p.P2Health -= damage;
             }
 
             else if(players[socket.id] === p.Player2 && p.P2Ready == 0)
             {
                 playernum = 2;
-                const ready = rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
+                const ready = await rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
+                const atk = await rpc(`SELECT FighterMove1, FighterMove2, FighterMove3, FighterMove4, Stock FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
+                let bonusq = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${atk.Stock}'`);
+                console.log("Bonus " + bonusq.PercentChange)
+                let bonus = parseFloat(bonusq.PercentChange);
                 switch (chosen_attack) {
                     case(1):
-                        atk = await rpc(`SELECT FighterMove1 FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
                         attack = atk.FighterMove1;
                         damage = 25 * (Math.random() * (1.25 - 0.75) + 0.75);
                         damage = Math.round(damage);
                         break;
                     case(2):
-                        atk = await rpc(`SELECT FighterMove2 FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
                         attack = atk.FighterMove2;
                         damage = 10 * (Math.random() * (4 - 1) + 1);
                         damage = Math.round(damage);
                         break;
                     case(3):
-                        atk = await rpc(`SELECT FighterMove3 FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
                         attack = atk.FighterMove3;
                         damage = 5 * (Math.random() * (10 - 1) + 1);
                         damage = Math.round(damage);
                         break;
                     case(4):
-                        atk = await rpc(`SELECT FighterMove4 FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
                         attack = atk.FighterMove4;
                         damage = 20 * (Math.random() * (1.1 - 0.9) + 0.9);
                         damage = Math.round(damage);
                         break;
                 }
+                damage += 5.00 * bonus;
+                console.log(bonus);
+                console.log(atk.Stock);
                 p.P1Health -= damage;
             }
-
             console.log(`${players[socket.id]} uses ${attack}, dealing ${damage} damage!`);
 
             if (playernum === 1) {
-                const loss = rpc(`UPDATE GameSession SET P2Health = '${p.P2Health}' WHERE RoomID = '${room}'`);
+                const loss = await rpc(`UPDATE GameSession SET P2Health = '${p.P2Health}' WHERE RoomID = '${room}'`);
             }
             else if (playernum === 2) {
-                const loss = rpc(`UPDATE GameSession SET P1Health = '${p.P1Health}' WHERE RoomID = '${room}'`);
+                const loss = await rpc(`UPDATE GameSession SET P1Health = '${p.P1Health}' WHERE RoomID = '${room}'`);
             }
-
-            p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter, P1Health, P2Health FROM GameSession WHERE RoomID = '${room}'`);
-
-            if (p.P1Health > 0 && p.P2Health <= 0) {
-                winner = "Player 1";
-            }
-            else if (p.P2Health > 0 && p.P1Health <= 0) {
-                winner = "Player 2";
-            }
-
-            if (p.P1Ready === 1 && p.P2Ready === 1) {
+            p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
+            if (p.P1Ready === 1 && p.P2Ready === 1){
                 console.log(`Players have each selected their move in ${room}`);
                 socket.to(room).emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, p.P1Health, p.P2Health);
                 socket.emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`});
@@ -314,7 +319,31 @@ module.exports = Socket = (httpServer) => {
             delete players[socket.id];
             console.log("Socket ID - Username List: " + players);
         });
-
+        async function stockCheck(ticker){
+            let stock = await rpc(`SELECT CompanyName, CAST(Price AS CHAR) AS Price, LastChecked, CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${ticker}'`);
+            let date = new Date().getTime() + (1 * 24 * 60 * 60 * 1000);
+            if (date > parseInt(stock.LastChecked) + 600000) {  // Only checks if data is older than 10 minutes
+                const newStockData = await axios.get(`https://query1.finance.yahoo.com/v6/finance/quote?symbols=${ticker}`);
+                const percentChange = newStockData.data.quoteResponse.result[0].regularMarketChangePercent;
+                const marketPrice = newStockData.data.quoteResponse.result[0].regularMarketPrice;
+                await rpc(`UPDATE Stocks SET LastChecked = '${date}', Price = '${marketPrice}', PercentChange = '${percentChange}' WHERE CompanyName = '${ticker}'`);
+                stock = await rpc(`SELECT CompanyName, CAST(Price AS CHAR) AS Price, LastChecked, CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = '${ticker}'`);
+                console.log("Updated data for stock: " + ticker)
+                return stock;
+            }
+            else{
+                console.log("Stock data for " + ticker + " updated recently, returning stored data")
+                return stock;
+            }
+        }
+        let amznTest = stockCheck('AMZN');
+        console.log(amznTest)
+        let tslaTest = stockCheck('TSLA');
+        console.log(tslaTest)
+        let fbTest = stockCheck('FB');
+        console.log(fbTest)
+        let aaplTest = stockCheck('AAPL');
+        console.log(aaplTest)
       
 
     });
