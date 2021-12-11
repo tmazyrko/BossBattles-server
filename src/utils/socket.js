@@ -75,27 +75,29 @@ module.exports = Socket = (httpServer) => {
         });
 
         socket.on(SOCKET_ACTIONS.READY, async(room) => {
+            console.log(socket.id);
             let p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
-            if(players[socket.id] === p.Player1)
+            if(players[socket.id] == p.Player1)
             {
-                const ready = rpc(`UPDATE GameSession SET P1Ready = 1 WHERE RoomID = '${room}'`);
+                const ready = await rpc(`UPDATE GameSession SET P1Ready = 1 WHERE RoomID = '${room}'`);
             }
-            if(players[socket.id] === p.Player2)
+            else if(players[socket.id] == p.Player2)
             {
-                const ready = rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
+                const ready = await rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
             }
             p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
-            if (p.P1Ready === 1 && p.P2Ready === 1){
+            if (p.P1Ready == 1 && p.P2Ready == 1){
                 let amzn = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'AMZN'`);
                 let tsla = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'TSLA'`);
                 let fb = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'FB'`);
                 let aapl = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'AAPL'`);
                 console.log(`Players ready in ${room}`);
-                socket.to(room).emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
-                socket.emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
-                socket.to(room).emit("players_ready", {msg: `Room ${room} is ready!`});
-                socket.emit("players_ready", {msg: `Room ${room} is ready!`});
-                const reset = rpc(`UPDATE GameSession SET P1Ready = 0, P2Ready = 0 WHERE RoomID = '${room}'`);
+                //io.in(room).emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
+                //socket.emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
+                io.in(room).emit("players_ready", {msg: `Room ${room} is ready!`});
+
+                //socket.emit("players_ready", {msg: `Room ${room} is ready!`});
+                const reset = await rpc(`UPDATE GameSession SET P1Ready = 0, P2Ready = 0 WHERE RoomID = '${room}'`);
             }
         });
 
@@ -262,6 +264,7 @@ module.exports = Socket = (httpServer) => {
                     case("Player 1"):
                         socket.to(room).emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1");
                         socket.emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1");
+                        //const update = await rpc(`UPDATE PlayerInfo SET P1Health = '${p.P1Health}' WHERE RoomID = '${room}'`);
                         break;
                     case("Player 2"):
                         socket.to(room).emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2");
@@ -312,6 +315,14 @@ module.exports = Socket = (httpServer) => {
             // Keep both players in a room for now and emit/reply specifically to each client's msgs by saving the socket id of sender and using io.sockets.socket(savedSocketId).emit(...)
             // or
             // Break up the room right after the game ends and just respond directly to each client
+        });
+
+        socket.on(SOCKET_ACTIONS.GET_LEADERBOARD, async () => {
+            const playerdata = await rpc(`SELECT Username, Wins, Losses, TotalGames FROM PlayerInfo`);
+            let users = json.parse(playerdata.Username);
+            console.log(users);
+            socket.emit("Leaderboards", users);
+
         });
 
         socket.on("disconnect", (reason) => {
