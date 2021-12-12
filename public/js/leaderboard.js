@@ -2,10 +2,9 @@ const socket = io();
 let playerdata = [];
 socket.emit("GET_LEADERBOARD");
 socket.on("Leaderboards", (info) => {
-    playerdata = info;
-    console.log(info);
+    playerdata = JSON.parse(info);
+    console.log(playerdata);
 });
-console.log(playerdata);
 const tabledata = [
     {id:1, name:"Oli Bob", progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1},
     {id:2, name:"Mary May", progress:1, gender:"female", rating:2, col:"blue", dob:"14/05/1982", car:true},
@@ -17,7 +16,11 @@ const tabledata = [
 console.log("test");
 
 //initialize table
-const table = new Tabulator("#leaderboard", {
-    data:playerdata, //assign data to table
-    autoColumns:true, //create columns from data field names
-});
+setTimeout(function(){
+    let table = new Tabulator("#leaderboard", {
+        data:playerdata.Leaderboard, //assign data to table
+        autoColumns:true, //create columns from data field names
+    });
+console.log(playerdata);
+}, 2000);
+

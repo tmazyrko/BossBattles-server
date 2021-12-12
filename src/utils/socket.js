@@ -94,8 +94,8 @@ module.exports = Socket = (httpServer) => {
                 console.log(`Players ready in ${room}`);
                 //io.in(room).emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
                 //socket.emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
+                io.in(room).emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
                 io.in(room).emit("players_ready", {msg: `Room ${room} is ready!`});
-
                 //socket.emit("players_ready", {msg: `Room ${room} is ready!`});
                 const reset = await rpc(`UPDATE GameSession SET P1Ready = 0, P2Ready = 0 WHERE RoomID = '${room}'`);
             }
@@ -254,6 +254,20 @@ module.exports = Socket = (httpServer) => {
             else if (playernum === 2) {
                 const loss = await rpc(`UPDATE GameSession SET P1Health = '${p.P1Health}' WHERE RoomID = '${room}'`);
             }
+            if (p.P1Health > 0 && p.P2Health <= 0) {
+                winner = "Player 1";
+            }
+            else if (p.P2Health > 0 && p.P1Health <= 0) {
+                winner = "Player 2";
+            }
+            else if (p.P1Health <= 0 && p.P2Health <= 0) {
+                if (p.P1Health > p.P2Health) {
+                    winner = "Player 1";
+                }
+                else if (p.P1Health < p.P2Health) {
+                    winner = "Player 2";
+                }
+            }
             p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
             if (p.P1Ready === 1 && p.P2Ready === 1){
                 console.log(`Players have each selected their move in ${room}`);
@@ -264,11 +278,26 @@ module.exports = Socket = (httpServer) => {
                     case("Player 1"):
                         socket.to(room).emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1");
                         socket.emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1");
-                        //const update = await rpc(`UPDATE PlayerInfo SET P1Health = '${p.P1Health}' WHERE RoomID = '${room}'`);
+                        const getp1wins = await rpc(`SELECT Wins, TotalGames FROM PlayerInfo WHERE Username = '${p.Player1}'`);
+                        let p1wins = getp1wins.Wins += 1;
+                        let p1wmatches = getp1wins.TotalGames += 1;
+                        const getp2loss = await rpc(`SELECT Losses, TotalGames FROM PlayerInfo WHERE Username = '${p.Player2}'`);
+                        let p2loss = getp2loss.Losses += 1;
+                        let p2lmatches = getp2loss.TotalGames += 1;
+                        const updatep1win = await rpc(`UPDATE PlayerInfo SET Wins = ${p1wins}, TotalGames = ${p1wmatches} WHERE Username = '${p.Player1}'`);
+                        const updatep2loss = await rpc(`UPDATE PlayerInfo SET Losses = ${p2loss}, TotalGames = ${p2lmatches} WHERE Username = '${p.Player2}'`);
                         break;
                     case("Player 2"):
                         socket.to(room).emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2");
                         socket.emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2");
+                        const getp2wins = await rpc(`SELECT Wins, TotalGames FROM PlayerInfo WHERE Username = '${p.Player2}'`);
+                        let p2wins = getp2wins.Wins += 1;
+                        let p2matches = getp2wins.TotalGames += 1;
+                        const getp1loss = await rpc(`SELECT Losses, TotalGames FROM PlayerInfo WHERE Username = '${p.Player1}'`);
+                        let p1loss = getp1loss.Losses += 1;
+                        let p1matches = getp1loss.TotalGames += 1;
+                        const updatep2win = await rpc(`UPDATE PlayerInfo SET Wins = ${p2wins}, TotalGames = ${p2matches} WHERE Username = '${p.Player2}'`);
+                        const updatep1loss = await rpc(`UPDATE PlayerInfo SET Losses = ${p1loss}, TotalGames = ${p1matches} WHERE Username = '${p.Player1}'`);
                         break;
                 }
 
@@ -318,10 +347,24 @@ module.exports = Socket = (httpServer) => {
         });
 
         socket.on(SOCKET_ACTIONS.GET_LEADERBOARD, async () => {
-            const playerdata = await rpc(`SELECT Username, Wins, Losses, TotalGames FROM PlayerInfo`);
-            let users = json.parse(playerdata.Username);
-            console.log(users);
-            socket.emit("Leaderboards", users);
+            //let playerdata = await rpc(`SELECT Username, Wins, Losses, TotalGames FROM PlayerInfo`);
+            let pdata;
+            let loading = 1;
+            let usercount = 1;
+            let lbinfo = '{ "Leaderboard" : [';
+            while(loading == 1) {
+                pdata = await rpc(`SELECT Username, Wins, Losses, TotalGames FROM PlayerInfo WHERE id = ${usercount}`);
+                if (typeof pdata.Username == 'undefined')
+                    break;
+                if (usercount != 1)
+                    lbinfo += ',';
+                lbinfo += `{ "Username":"${pdata.Username}" , "Wins":"${pdata.Wins}" , "Losses":"${pdata.Losses}" , "Total Games":"${pdata.TotalGames}" }`;
+                usercount ++;
+            }
+            lbinfo += ']}';
+            console.log(lbinfo);
+
+            socket.emit("Leaderboards", lbinfo);
 
         });
 
