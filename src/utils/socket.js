@@ -74,28 +74,31 @@ module.exports = Socket = (httpServer) => {
             console.log(io.of("/").adapter.rooms)
         });
 
+        let p2socket;
         socket.on(SOCKET_ACTIONS.READY, async(room) => {
             let p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
             if(players[socket.id] === p.Player1)
             {
-                const ready = rpc(`UPDATE GameSession SET P1Ready = 1 WHERE RoomID = '${room}'`);
+                const ready = await rpc(`UPDATE GameSession SET P1Ready = 1 WHERE RoomID = '${room}'`);
             }
-            if(players[socket.id] === p.Player2)
+            else if(players[socket.id] === p.Player2)
             {
-                const ready = rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
+                p2socket = socket.id;
+                const ready = await rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
             }
+
             p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
+
             if (p.P1Ready === 1 && p.P2Ready === 1){
                 let amzn = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'AMZN'`);
                 let tsla = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'TSLA'`);
                 let fb = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'FB'`);
                 let aapl = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'AAPL'`);
                 console.log(`Players ready in ${room}`);
-                socket.to(room).emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
+                io.to(room).emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
                 socket.emit("stock_data", amzn.PercentChange, tsla.PercentChange, fb.PercentChange, aapl.PercentChange);
-                socket.to(room).emit("players_ready", {msg: `Room ${room} is ready!`});
-                socket.emit("players_ready", {msg: `Room ${room} is ready!`});
-                const reset = rpc(`UPDATE GameSession SET P1Ready = 0, P2Ready = 0 WHERE RoomID = '${room}'`);
+                io.to(room).emit("players_ready", {msg: `Room ${room} is ready!`});
+                const reset = await rpc(`UPDATE GameSession SET P1Ready = 0, P2Ready = 0 WHERE RoomID = '${room}'`);
             }
         });
 
@@ -167,6 +170,7 @@ module.exports = Socket = (httpServer) => {
             // cont: this will let the client update the UI to the victory screen, taking away the old triggers (buttons) and showing new ones to progress through the UI flow
 
             // IF( WIN CONDITION = TRUE) THEN EMIT TO CLIENT: socket.emit("change_scene_to_victory", {winner: "blah player"});
+            let playerHp = [];
             let p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter, P1Health, P2Health FROM GameSession WHERE RoomID = '${room}'`);
             let playernum = 0;
             let atk;
@@ -252,11 +256,26 @@ module.exports = Socket = (httpServer) => {
             else if (playernum === 2) {
                 const loss = await rpc(`UPDATE GameSession SET P1Health = '${p.P1Health}' WHERE RoomID = '${room}'`);
             }
-            p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
+
+            p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter, P1Health, P2Health FROM GameSession WHERE RoomID = '${room}'`);
+
+            if (p.P1Health > 0 && p.P2Health <= 0) {
+                winner = "Player 1";
+            }
+            else if (p.P2Health > 0 && p.P1Health <= 0) {
+                winner = "Player 2";
+            }
+
             if (p.P1Ready === 1 && p.P2Ready === 1){
                 console.log(`Players have each selected their move in ${room}`);
-                socket.to(room).emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, p.P1Health, p.P2Health);
-                socket.emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`});
+                playerHp.push(p.P1Health);
+                playerHp.push(p.P2Health);
+
+                io.to(room).emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, playerHp);
+
+                while(playerHp.length > 0) {
+                    playerHp.pop();
+                }
 
                 switch (winner) {
                     case("Player 1"):
@@ -279,7 +298,6 @@ module.exports = Socket = (httpServer) => {
             // If there is something to unlock, send a command to client to go to the unlocks scene
             //Check and see if an unlock happens and how many characters they have unlocked
             //on continue from victory screen
-            console.log("ye")
             const numCharUnlockQuery = "SELECT NumCharUnlock FROM PlayerInfo WHERE Username = \"" + players[socket.id] + "\";"
             const numCharUnlock = await rpc(numCharUnlockQuery)
             const userWinsQuery = "SELECT Wins FROM PlayerInfo WHERE Username = \"" + players[socket.id] + "\";"

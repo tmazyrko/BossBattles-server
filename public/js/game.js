@@ -248,8 +248,6 @@ const selectSetup = function() {
         fontStyle: 'bold',
     }));
 
-
-
     selectText.style.stroke = 0x000000;
     selectText.style.strokeThickness = 6;
     bezosText.style.stroke = 0x000000;
@@ -260,7 +258,6 @@ const selectSetup = function() {
     zuckText.style.strokeThickness = 6;
     cookText.style.stroke = 0x000000;
     cookText.style.strokeThickness = 6;
-
 
     selectScene.addChild(selectText);
     selectScene.addChild(bezosText);
@@ -523,9 +520,9 @@ window.onload = function() {
         gameSetup();
     });
 
-    socket.on("battle", (message, p1hp, p2hp) => {
-        player1hp.text = p1hp;
-        player2hp.text = p2hp;
+    socket.on("battle", (message, playerHp) => {
+        player1hp.text = playerHp[0];
+        player2hp.text = playerHp[1];
     });
 
     socket.on("setup_victory", (message, winner) => {
