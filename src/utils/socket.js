@@ -159,7 +159,7 @@ module.exports = Socket = (httpServer) => {
         });
 
         let winner;
-
+        let playerSprites = [];
         socket.on(SOCKET_ACTIONS.ATK_SUBMIT, async (chosen_attack, room) => {
             // commit players move to this room's table
             // check if both players have already attacked
@@ -270,11 +270,18 @@ module.exports = Socket = (httpServer) => {
                 console.log(`Players have each selected their move in ${room}`);
                 playerHp.push(p.P1Health);
                 playerHp.push(p.P2Health);
+                playerSprites.push(p.P1Fighter);
+                playerSprites.push(p.P2Fighter);
 
                 io.to(room).emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, playerHp);
+                io.to(room).emit("combat", {msg: `Combat ye`});
 
                 while(playerHp.length > 0) {
                     playerHp.pop();
+                }
+
+                while (playerSprites.length > 0) {
+                    playerSprites.pop();
                 }
 
                 switch (winner) {

@@ -462,6 +462,7 @@ window.onload = function() {
         cookNum = aapl;
     });
 
+    let playerSprites = [];
     socket.on("show_opponent", (message, playerChoices) => {
         console.log(message.msg);
         console.log(playerChoices);
@@ -471,21 +472,25 @@ window.onload = function() {
                 spriteBezos.anchor.set(0.5);
                 spriteBezos.x = -100;
                 gameScene.addChild(spriteBezos);
+                playerSprites.push(spriteBezos);
                 break;
             case('Elon Musk'):
                 spriteMusk.anchor.set(0.5);
                 spriteMusk.x = -100;
                 gameScene.addChild(spriteMusk);
+                playerSprites.push(spriteMusk);
                 break;
             case('Mark Zuckerberg'):
                 spriteZuck.anchor.set(0.5);
                 spriteZuck.x = -100;
                 gameScene.addChild(spriteZuck);
+                playerSprites.push(spriteZuck);
                 break;
             case('Tim Cook'):
                 spriteCook.anchor.set(0.5);
                 spriteCook.x = -100;
                 gameScene.addChild(spriteCook);
+                playerSprites.push(spriteCook);
                 break;
         }
 
@@ -494,21 +499,25 @@ window.onload = function() {
                 spriteBezos.anchor.set(0.5);
                 spriteBezos.x = 100;
                 gameScene.addChild(spriteBezos);
+                playerSprites.push(spriteBezos);
                 break;
             case('Elon Musk'):
                 spriteMusk.anchor.set(0.5);
                 spriteMusk.x = 100;
                 gameScene.addChild(spriteMusk);
+                playerSprites.push(spriteMusk);
                 break;
             case('Mark Zuckerberg'):
                 spriteZuck.anchor.set(0.5);
                 spriteZuck.x = 100;
                 gameScene.addChild(spriteZuck);
+                playerSprites.push(spriteZuck);
                 break;
             case('Tim Cook'):
                 spriteCook.anchor.set(0.5);
                 spriteCook.x = 100;
                 gameScene.addChild(spriteCook);
+                playerSprites.push(spriteCook);
                 break;
         }
     });
@@ -523,6 +532,266 @@ window.onload = function() {
     socket.on("battle", (message, playerHp) => {
         player1hp.text = playerHp[0];
         player2hp.text = playerHp[1];
+    });
+
+    let p1combat = false;
+    let p2move = false;
+    let p2combat = false;
+    let count = 0;
+    socket.on("combat", (message) => {
+       console.log(message.msg);
+       // console.log(playerSprites);
+
+
+        // count = 0;
+
+
+        // console.log(`checking: ${p2move}`);
+
+        // console.log(`checking count: ${count}`);
+
+        app.ticker.start();
+        app.ticker.add(() => {
+            if (p1combat === false) {
+                playerSprites[0].x += 10;
+                count++;
+
+                if (count >= 10) {
+                    p1combat = true;
+                }
+            }
+            else {
+                playerSprites[0].x -= 10;
+                count--;
+
+                if (count <= 0) {
+                    p1combat = false;
+                    console.log(`checking p1com: ${p1combat}`);
+                    app.ticker.stop();
+                }
+            }
+
+            app.ticker.start();
+            if (p2combat === false) {
+                playerSprites[1].x -= 10;
+                count++;
+
+                if (count >= 10) {
+                    p2combat = true;
+                }
+            }
+            else {
+                playerSprites[1].x += 10;
+                count--;
+
+                if (count <= 0) {
+                    p2combat = false;
+                    app.ticker.stop();
+                }
+            }
+        });
+
+
+
+        // p2move = true;
+
+        // app.ticker.add(() => {
+        //     if (p2combat === false) {
+        //         playerSprites[1].x -= 10;
+        //         count++;
+        //
+        //         if (count >= 10) {
+        //             p2combat = true;
+        //         }
+        //     }
+        //     else {
+        //         playerSprites[1].x += 10;
+        //         count--;
+        //
+        //         if (count <= 0) {
+        //             p2combat = false;
+        //             console.log(`checking p2com: ${p2combat}`);
+        //             app.ticker.stop();
+        //
+        //         }
+        //     }
+        // });
+
+
+
+
+       // switch (playerSprites[0]) {
+       //     case('Jeff Bezos'):
+       //         app.ticker.add(() => {
+       //             if (p1combat === false) {
+       //                 spriteBezos.x += 10;
+       //                 count++;
+       //
+       //                 if (count >= 10) {
+       //                     p1combat = true;
+       //                 }
+       //             }
+       //             else {
+       //                 spriteBezos.x -= 10;
+       //                 count--;
+       //
+       //                 if (count <= 0) {
+       //                     app.ticker.stop();
+       //                 }
+       //             }
+       //         });
+       //         p2move = true;
+       //         break;
+       //     case('Elon Musk'):
+       //         app.ticker.add(() => {
+       //             if (p1combat === false) {
+       //                 spriteMusk.x += 10;
+       //                 count++;
+       //
+       //                 if (count >= 10) {
+       //                     p1combat = true;
+       //                 }
+       //             }
+       //             else {
+       //                 spriteMusk.x -= 10;
+       //                 count--;
+       //
+       //                 if (count <= 0) {
+       //                     app.ticker.stop();
+       //                 }
+       //             }
+       //         });
+       //         p2move = true;
+       //         break;
+       //     case('Mark Zuckerberg'):
+       //         app.ticker.add(() => {
+       //             if (p1combat === false) {
+       //                 spriteZuck.x += 10;
+       //                 count++;
+       //
+       //                 if (count >= 10) {
+       //                     p1combat = true;
+       //                 }
+       //             }
+       //             else {
+       //                 spriteZuck.x -= 10;
+       //                 count--;
+       //
+       //                 if (count <= 0) {
+       //                     app.ticker.stop();
+       //                 }
+       //             }
+       //         });
+       //         p2move = true;
+       //         break;
+       //     case('Tim Cook'):
+       //         app.ticker.add(() => {
+       //             if (p1combat === false) {
+       //                 spriteCook.x += 10;
+       //                 count++;
+       //
+       //                 if (count >= 10) {
+       //                     p1combat = true;
+       //                 }
+       //             }
+       //             else {
+       //                 spriteCook.x -= 10;
+       //                 count--;
+       //
+       //                 if (count <= 0) {
+       //                     app.ticker.stop();
+       //                 }
+       //             }
+       //         });
+       //         p2move = true;
+       //         break;
+       // }
+       //
+       // console.log(p2move);
+       // if (p2move) {
+       //     switch (playerSprites[1]) {
+       //         case('Jeff Bezos'):
+       //             app.ticker.add(() => {
+       //                 if (p2combat === false) {
+       //                     spriteBezos.x -= 10;
+       //                     count++;
+       //
+       //                     if (count >= 10) {
+       //                         p2combat = true;
+       //                     }
+       //                 }
+       //                 else {
+       //                     spriteBezos.x += 10;
+       //                     count--;
+       //
+       //                     if (count <= 0) {
+       //                         app.ticker.stop();
+       //                     }
+       //                 }
+       //             });
+       //             break;
+       //         case('Elon Musk'):
+       //             app.ticker.add(() => {
+       //                 if (p2combat === false) {
+       //                     spriteMusk.x -= 10;
+       //                     count++;
+       //
+       //                     if (count >= 10) {
+       //                         p2combat = true;
+       //                     }
+       //                 }
+       //                 else {
+       //                     spriteMusk.x += 10;
+       //                     count--;
+       //
+       //                     if (count <= 0) {
+       //                         app.ticker.stop();
+       //                     }
+       //                 }
+       //             });
+       //             break;
+       //         case('Mark Zuckerberg'):
+       //             app.ticker.add(() => {
+       //                 if (p2combat === false) {
+       //                     spriteZuck.x -= 10;
+       //                     count++;
+       //
+       //                     if (count >= 10) {
+       //                         p2combat = true;
+       //                     }
+       //                 }
+       //                 else {
+       //                     spriteZuck.x += 10;
+       //                     count--;
+       //
+       //                     if (count <= 0) {
+       //                         app.ticker.stop();
+       //                     }
+       //                 }
+       //             });
+       //             break;
+       //         case('Tim Cook'):
+       //             app.ticker.add(() => {
+       //                 if (p2combat === false) {
+       //                     spriteCook.x -= 10;
+       //                     count++;
+       //
+       //                     if (count >= 10) {
+       //                         p2combat = true;
+       //                     }
+       //                 }
+       //                 else {
+       //                     spriteCook.x += 10;
+       //                     count--;
+       //
+       //                     if (count <= 0) {
+       //                         app.ticker.stop();
+       //                     }
+       //                 }
+       //             });
+       //             break;
+       //     }
+       // }
     });
 
     socket.on("setup_victory", (message, winner) => {
