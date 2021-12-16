@@ -103,6 +103,8 @@ module.exports = Socket = (httpServer) => {
         });
 
         let playerChoices = [];
+        let p1Moves = [];
+        let p2Moves = [];
         socket.on(SOCKET_ACTIONS.CHARACTER_SUBMIT, async(character, room) => {
             let p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter FROM GameSession WHERE RoomID = '${room}'`);
             let playernum = 0;
@@ -143,6 +145,18 @@ module.exports = Socket = (httpServer) => {
 
             p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter FROM GameSession WHERE RoomID = '${room}'`);
 
+            if (playernum === 1) {
+                const a = await rpc(`SELECT FighterMove1, FighterMove2, FighterMove3, FighterMove4 FROM FighterInfo WHERE FighterName = '${p.P1Fighter}'`);
+                p1Moves.push(a.FighterMove1, a.FighterMove2, a.FighterMove3, a.FighterMove4);
+                console.log(socket.id);
+                io.to(socket.id).emit("show_moves", {msg: `P1 Moves: ${p1Moves}`}, p1Moves);
+            }
+            else {
+                const b = await rpc(`SELECT FighterMove1, FighterMove2, FighterMove3, FighterMove4 FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
+                p2Moves.push(b.FighterMove1, b.FighterMove2, b.FighterMove3, b.FighterMove4);
+                io.to(socket.id).emit("show_moves", {msg: `P2 Moves: ${p2Moves}`}, p2Moves);
+            }
+
             if (p.P1Ready === 1 && p.P2Ready === 1){
                 playerChoices.push(p.P1Fighter);
                 playerChoices.push(p.P2Fighter);
@@ -159,7 +173,6 @@ module.exports = Socket = (httpServer) => {
         });
 
         let winner;
-        let playerSprites = [];
         socket.on(SOCKET_ACTIONS.ATK_SUBMIT, async (chosen_attack, room) => {
             // commit players move to this room's table
             // check if both players have already attacked
@@ -270,18 +283,12 @@ module.exports = Socket = (httpServer) => {
                 console.log(`Players have each selected their move in ${room}`);
                 playerHp.push(p.P1Health);
                 playerHp.push(p.P2Health);
-                playerSprites.push(p.P1Fighter);
-                playerSprites.push(p.P2Fighter);
 
                 io.to(room).emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, playerHp);
                 io.to(room).emit("combat", {msg: `Combat ye`});
 
                 while(playerHp.length > 0) {
                     playerHp.pop();
-                }
-
-                while (playerSprites.length > 0) {
-                    playerSprites.pop();
                 }
 
                 switch (winner) {

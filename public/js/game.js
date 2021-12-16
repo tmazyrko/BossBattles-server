@@ -21,10 +21,18 @@ const selectBezos = PIXI.Sprite.from('../img/select-bezos.png');
 const selectMusk = PIXI.Sprite.from('../img/select-musk.png');
 const selectZuck = PIXI.Sprite.from('../img/select-zuck.png');
 const selectCook = PIXI.Sprite.from('../img/select-cook.png');
-let atk1 = PIXI.Sprite.from('../img/atk1.png');
-let atk2 = PIXI.Sprite.from('../img/atk2.png');
-let atk3 = PIXI.Sprite.from('../img/atk3.png');
-let atk4 = PIXI.Sprite.from('../img/atk4.png');
+// let atk1 = PIXI.Sprite.from('../img/atk1.png');
+// let atk2 = PIXI.Sprite.from('../img/atk2.png');
+// let atk3 = PIXI.Sprite.from('../img/atk3.png');
+// let atk4 = PIXI.Sprite.from('../img/atk4.png');
+let atk1 = new PIXI.Text('ye');
+let atk2;
+let atk3;
+let atk4;
+let pmove1;
+let pmove2;
+let pmove3;
+let pmove4;
 let player1hp = new PIXI.Text("100");
 let player2hp = new PIXI.Text("100");
 let victoryText = new PIXI.Text("WINNER IS...");
@@ -68,6 +76,8 @@ const init = function() {
         const parent = app.view.parentNode;
 
         app.renderer.resize(parent.clientWidth, parent.clientHeight);
+        console.log(parent.clientWidth, parent.clientHeight);
+        console.log(app.screen.width, app.screen.height);
 
         matchScene.position.set(app.screen.width / 2, app.screen.height / 2);
         app.stage.addChild(matchScene);
@@ -90,8 +100,9 @@ const init = function() {
 // Match scene setup function
 
 const matchSetup = function() {
+    window.addEventListener('resize', resizeMatch);
+
     matchText.anchor.set(0.5);
-    matchText.y = -240;
     matchText.style = new PIXI.TextStyle(({
         fill: 0x158233,
         fontSize: 60,
@@ -99,15 +110,12 @@ const matchSetup = function() {
     }));
 
     matchText.style.stroke = 0x000000;
-    matchText.style.strokeThickness = 7;
 
-    create.scale.set(1.4);
+
     create.anchor.set(0.5);
-    create.y = -80;
 
-    join.scale.set(1.4);
+
     join.anchor.set(0.5);
-    join.y = 60;
 
     create.interactive = true;
     create.buttonMode = true;
@@ -134,10 +142,55 @@ const matchSetup = function() {
     })
 
     input.placeholder = 'Enter room code';
-    input.y = 190;
+
     input.pivot.x = input.width / 2;
     input.pivot.y = input.height / 2;
     matchScene.addChild(input);
+
+    function resizeMatch() {
+
+        if (app.screen.width < 800 && app.screen.width >= 400) {
+            matchText.style.fontSize = 40;
+            create.width = 360;
+            create.height = 108;
+            join.width = 360;
+            join.height = 108;
+            input.width = 360;
+            matchText.y = -240;
+            matchText.style.strokeThickness = 7;
+            create.y = -80;
+            join.y = 60;
+            input.y = 190;
+        }
+        else if (app.screen.width < 400) {
+            matchText.style.fontSize = 20;
+            create.width = 216;
+            create.height = 65;
+            join.width = 216;
+            join.height = 65;
+            input.width = 216;
+            matchText.y = -140;
+            matchText.style.strokeThickness = 3;
+            create.y = -40;
+            join.y = 40;
+            input.y = 140;
+        }
+        else {
+            matchText.style.fontSize = 60;
+            create.width = 400;
+            create.height = 120;
+            join.width = 400;
+            join.height = 120;
+            input.width = 400;
+            matchText.y = -240;
+            matchText.style.strokeThickness = 7;
+            create.y = -80;
+            join.y = 60;
+            input.y = 190;
+        }
+    }
+
+    resizeMatch();
 
     /*join.on('pointerdown', (e) => {
         matchScene.visible = false;
@@ -149,10 +202,10 @@ const matchSetup = function() {
 // Lobby scene setup function
 
 const lobbySetup = function() {
+    window.addEventListener('resize', resizeLobby);
+
     lobbyScene.addChild(lobby);
-    lobby.scale.set(0.9);
     lobby.anchor.set(0.5);
-    lobby.y = -270;
 
     readyText.anchor.set(0.5);
     readyText.y = -70;
@@ -164,10 +217,8 @@ const lobbySetup = function() {
     }));
 
     readyText.style.stroke = 0x000000;
-    readyText.style.strokeThickness = 6;
 
     playerText.anchor.set(0.5);
-    playerText.y = 270;
     playerText.style = new PIXI.TextStyle(({
         fill: 0x6F1515,
         fontSize: 35,
@@ -175,7 +226,6 @@ const lobbySetup = function() {
     }));
 
     opponentText.anchor.set(0.5);
-    opponentText.y = 340;
     opponentText.style = new PIXI.TextStyle(({
         fill: 0x6F1515,
         fontSize: 35,
@@ -187,19 +237,109 @@ const lobbySetup = function() {
     lobbyScene.addChild(opponentText);
 
     lobbyScene.addChild(punch);
-    punch.scale.set(1.3);
     punch.anchor.set(0.5);
-    punch.y = 100;
 
     punch.interactive = true;
     punch.buttonMode = true;
+
+    function resizeLobby() {
+
+        if (app.screen.width < 1200 && app.screen.width >= 900) {
+            readyText.visible = true;
+            lobby.y = -270;
+            lobby.width = 500;
+            lobby.height = 160;
+            readyText.style.fontSize = 27;
+            readyText.visible = true;
+            readyText.style.strokeThickness = 5;
+            punch.y = 100;
+            playerText.style.fontSize = 27;
+            opponentText.style.fontSize = 27;
+            punch.width = 250;
+            punch.height = 200;
+            playerText.y = 270;
+            opponentText.y = 340;
+        }
+        else if (app.screen.width < 900 && app.screen.width >= 800) {
+            readyText.visible = true;
+            lobby.y = -270;
+            lobby.width = 500;
+            lobby.height = 160;
+            readyText.style.fontSize = 23;
+            readyText.style.strokeThickness = 4;
+            punch.y = 100;
+            playerText.style.fontSize = 23;
+            opponentText.style.fontSize = 23;
+            punch.width = 250;
+            punch.height = 200;
+            playerText.y = 270;
+            opponentText.y = 340;
+        }
+        else if (app.screen.width < 800 && app.screen.width >= 540) {
+            lobby.width = 440;
+            lobby.height = 150;
+            lobby.y = -200;
+            readyText.visible = false;
+            punch.y = 40;
+            playerText.style.fontSize = 19;
+            opponentText.style.fontSize = 19;
+            punch.width = 200;
+            punch.height = 150;
+            playerText.y = 190;
+            opponentText.y = 260;
+        }
+        else if (app.screen.width < 540 && app.screen.width >= 400) {
+            lobby.width = 380;
+            lobby.height = 100;
+            lobby.y = -130;
+            readyText.visible = false;
+            punch.y = 30;
+            playerText.style.fontSize = 10;
+            opponentText.style.fontSize = 10;
+            punch.width = 180;
+            punch.height = 130;
+            playerText.y = 150;
+            opponentText.y = 190;
+        }
+        else if (app.screen.width < 400) {
+            lobby.width = 250;
+            lobby.height = 90;
+            lobby.y = -140;
+            readyText.visible = false;
+            punch.y = 20;
+            playerText.style.fontSize = 10;
+            opponentText.style.fontSize = 9;
+            punch.width = 170;
+            punch.height = 120;
+            playerText.y = 120;
+            opponentText.y = 170;
+        }
+        else {
+            readyText.visible = true;
+            lobby.y = -270;
+            lobby.width = 600;
+            lobby.height = 192;
+            readyText.style.fontSize = 35;
+            readyText.style.strokeThickness = 6;
+            punch.y = 100;
+            playerText.style.fontSize = 35;
+            opponentText.style.fontSize = 35;
+            punch.width = 250;
+            punch.height = 200;
+            playerText.y = 270;
+            opponentText.y = 340;
+        }
+    }
+
+    resizeLobby();
 }
 
 // Select scene setup function
 
 const selectSetup = function() {
+    window.addEventListener('resize', resizeSelect);
+
     selectText.anchor.set(0.5);
-    selectText.y = -300;
     selectText.style = new PIXI.TextStyle(({
         fill: 0x4F6F9E,
         fontSize: 40,
@@ -209,8 +349,6 @@ const selectSetup = function() {
     console.log(bezosNum);
     bezosText.text = bezosNum;
     bezosText.anchor.set(0.5);
-    bezosText.y = 225;
-    bezosText.x = -450;
     bezosText.style = new PIXI.TextStyle(({
         fill: 0x4F6F9E,
         fontSize: 40,
@@ -219,8 +357,6 @@ const selectSetup = function() {
     }));
     muskText.text = muskNum;
     muskText.anchor.set(0.5);
-    muskText.y = 225;
-    muskText.x = -150;
     muskText.style = new PIXI.TextStyle(({
         fill: 0x4F6F9E,
         fontSize: 40,
@@ -229,8 +365,6 @@ const selectSetup = function() {
     }));
     zuckText.text = zuckNum;
     zuckText.anchor.set(0.5);
-    zuckText.y = 225;
-    zuckText.x = 150;
     zuckText.style = new PIXI.TextStyle(({
         fill: 0x4F6F9E,
         fontSize: 40,
@@ -239,8 +373,6 @@ const selectSetup = function() {
     }));
     cookText.text = cookNum;
     cookText.anchor.set(0.5);
-    cookText.y = 225;
-    cookText.x = 450;
     cookText.style = new PIXI.TextStyle(({
         fill: 0x4F6F9E,
         fontSize: 40,
@@ -266,20 +398,12 @@ const selectSetup = function() {
     selectScene.addChild(cookText);
 
     selectBezos.anchor.set(0.5);
-    selectBezos.y = 60;
-    selectBezos.x = -450;
 
     selectMusk.anchor.set(0.5);
-    selectMusk.y = 60;
-    selectMusk.x = -150;
 
     selectZuck.anchor.set(0.5);
-    selectZuck.y = 60;
-    selectZuck.x = 150;
 
     selectCook.anchor.set(0.5);
-    selectCook.y = 60;
-    selectCook.x = 450;
 
     selectBezos.interactive = true;
     selectBezos.buttonMode = true;
@@ -297,11 +421,186 @@ const selectSetup = function() {
     selectScene.addChild(selectMusk);
     selectScene.addChild(selectZuck);
     selectScene.addChild(selectCook);
+
+    function resizeSelect() {
+
+        if (app.screen.width < 1200 && app.screen.width >= 900) {
+            selectText.style.fontSize = 40;
+            selectText.style.strokeThickness = 6;
+            selectText.y = -300;
+
+            selectBezos.width = 200;
+            selectBezos.height = 200;
+            selectBezos.y = 40;
+            selectBezos.x = -330;
+            bezosText.style.fontSize = 30;
+            bezosText.style.strokeThickness = 6;
+            bezosText.y = 180;
+            bezosText.x = -335;
+
+            selectMusk.width = 200;
+            selectMusk.height = 200;
+            selectMusk.y = 40;
+            selectMusk.x = -110;
+            muskText.style.fontSize = 30;
+            muskText.style.strokeThickness = 6;
+            muskText.y = 180;
+            muskText.x = -115;
+
+            selectZuck.width = 200;
+            selectZuck.height = 200;
+            selectZuck.y = 40;
+            selectZuck.x = 110;
+            zuckText.style.fontSize = 30;
+            zuckText.style.strokeThickness = 6;
+            zuckText.y = 180;
+            zuckText.x = 105;
+
+            selectCook.width = 200;
+            selectCook.height = 200;
+            selectCook.y = 40;
+            selectCook.x = 330;
+            cookText.style.fontSize = 30;
+            cookText.style.strokeThickness = 6;
+            cookText.y = 180;
+            cookText.x = 325;
+        }
+        else if (app.screen.width < 900 && app.screen.width >= 400) {
+            selectText.style.fontSize = 20;
+            selectText.style.strokeThickness = 6;
+            selectText.y = -190;
+
+            selectBezos.width = 150;
+            selectBezos.height = 150;
+            selectBezos.y = -70;
+            selectBezos.x = -80;
+            bezosText.style.fontSize = 20;
+            bezosText.style.strokeThickness = 6;
+            bezosText.y = 25;
+            bezosText.x = -70;
+
+            selectMusk.width = 150;
+            selectMusk.height = 150;
+            selectMusk.y = -70;
+            selectMusk.x = 100;
+            muskText.style.fontSize = 20;
+            muskText.style.strokeThickness = 6;
+            muskText.y = 25;
+            muskText.x = 100;
+
+            selectZuck.width = 150;
+            selectZuck.height = 150;
+            selectZuck.y = 120;
+            selectZuck.x = -80;
+            zuckText.style.fontSize = 20;
+            zuckText.style.strokeThickness = 6;
+            zuckText.y = 220;
+            zuckText.x = -70;
+
+            selectCook.width = 150;
+            selectCook.height = 150;
+            selectCook.y = 120;
+            selectCook.x = 100;
+            cookText.style.fontSize = 20;
+            cookText.style.strokeThickness = 6;
+            cookText.y = 220;
+            cookText.x = 90;
+        }
+        else if (app.screen.width < 400) {
+            selectText.style.fontSize = 10;
+            selectText.style.strokeThickness = 2;
+            selectText.y = -130;
+
+            selectBezos.width = 70;
+            selectBezos.height = 70;
+            selectBezos.y = -40;
+            selectBezos.x = -50;
+            bezosText.style.fontSize = 13;
+            bezosText.style.strokeThickness = 3;
+            bezosText.y = 15;
+            bezosText.x = -50;
+
+            selectMusk.width = 70;
+            selectMusk.height = 70;
+            selectMusk.y = -40;
+            selectMusk.x = 50;
+            muskText.style.fontSize = 13;
+            muskText.style.strokeThickness = 3;
+            muskText.y = 15;
+            muskText.x = 50;
+
+            selectZuck.width = 70;
+            selectZuck.height = 70;
+            selectZuck.y = 70;
+            selectZuck.x = -50;
+            zuckText.style.fontSize = 13;
+            zuckText.style.strokeThickness = 3;
+            zuckText.y = 120;
+            zuckText.x = -50;
+
+            selectCook.width = 70;
+            selectCook.height = 70;
+            selectCook.y = 70;
+            selectCook.x = 50;
+            cookText.style.fontSize = 13;
+            cookText.style.strokeThickness = 3;
+            cookText.y = 120;
+            cookText.x = 50;
+        }
+        else {
+            selectText.style.fontSize = 40;
+            selectText.style.strokeThickness = 6;
+            selectText.y = -300;
+
+            selectBezos.width = 240;
+            selectBezos.height = 240;
+            selectBezos.y = 60;
+            selectBezos.x = -450;
+            bezosText.style.fontSize = 40;
+            bezosText.style.strokeThickness = 6;
+            bezosText.y = 225;
+            bezosText.x = -450;
+
+            selectMusk.width = 240;
+            selectMusk.height = 240;
+            selectMusk.y = 60;
+            selectMusk.x = -150;
+            muskText.style.fontSize = 40;
+            muskText.style.strokeThickness = 6;
+            muskText.y = 225;
+            muskText.x = -150;
+
+            selectZuck.width = 240;
+            selectZuck.height = 240;
+            selectZuck.y = 60;
+            selectZuck.x = 150;
+            zuckText.style.fontSize = 40;
+            zuckText.style.strokeThickness = 6;
+            zuckText.y = 225;
+            zuckText.x = 150;
+
+            selectCook.width = 240;
+            selectCook.height = 240;
+            selectCook.y = 60;
+            selectCook.x = 450;
+            cookText.style.fontSize = 40;
+            cookText.style.strokeThickness = 6;
+            cookText.y = 225;
+            cookText.x = 450;
+        }
+    }
+
+    resizeSelect();
 }
 
-// Game scene setup function
+// Move setup function
 
-const gameSetup = function() {
+const moveSetup = function() {
+    // atk1 = new PIXI.Text('ye');
+    atk2 = new PIXI.Text(pmove2);
+    atk3 = new PIXI.Text(pmove3);
+    atk4 = new PIXI.Text(pmove4);
+
     atk1.y = 300;
     atk1.x = -450;
     atk1.anchor.set(0.5);
@@ -318,20 +617,10 @@ const gameSetup = function() {
     atk4.x = 450;
     atk4.anchor.set(0.5);
 
-    player1hp.y = 100;
-    player1hp.x = -450;
-    player1hp.anchor.set(0.5);
-
-    player2hp.y = 100;
-    player2hp.x = 450;
-    player2hp.anchor.set(0.5);
-
     gameScene.addChild(atk1);
     gameScene.addChild(atk2);
     gameScene.addChild(atk3);
     gameScene.addChild(atk4);
-    gameScene.addChild(player1hp);
-    gameScene.addChild(player2hp);
 
     atk1.interactive = true;
     atk1.buttonMode = true;
@@ -344,6 +633,56 @@ const gameSetup = function() {
 
     atk4.interactive = true;
     atk4.buttonMode = true;
+}
+
+// Game scene setup function
+
+const gameSetup = function() {
+    window.addEventListener('resize', resizeGame);
+    player1hp.anchor.set(0.5);
+    player1hp.style = new PIXI.TextStyle(({
+        fill: 0x158233,
+        fontFamily: 'Press Start 2P',
+        fontStyle: 'bold',
+    }));
+
+    player2hp.anchor.set(0.5);
+    player2hp.style = new PIXI.TextStyle(({
+        fill: 0x158233,
+        fontFamily: 'Press Start 2P',
+        fontStyle: 'bold',
+    }));
+
+    gameScene.addChild(player1hp);
+    gameScene.addChild(player2hp);
+
+    function resizeGame() {
+
+        if (app.screen.width <= 1800) {
+
+        }
+        else if (app.screen.width < 900 && app.screen.width >= 400) {
+
+        }
+        else if (app.screen.width < 400) {
+
+        }
+        else {
+            player1hp.y = -190;
+            player1hp.x = -420;
+            player1hp.style.fontSize = 40;
+            player1hp.style.stroke = 0x000000;
+            player1hp.style.strokeThickness = 3;
+
+            player2hp.y = -190;
+            player2hp.x = 420;
+            player2hp.style.fontSize = 40;
+            player2hp.style.stroke = 0x000000;
+            player2hp.style.strokeThickness = 3;
+        }
+    }
+
+    resizeGame();
 }
 
 // Victory scene setup function
@@ -462,6 +801,19 @@ window.onload = function() {
         cookNum = aapl;
     });
 
+    socket.on("show_moves", (message, playerMoves) => {
+        console.log(message.msg);
+        console.log(playerMoves);
+
+        pmove1 = playerMoves[0];
+        pmove2 = playerMoves[1];
+        pmove3 = playerMoves[2];
+        pmove4 = playerMoves[3];
+        console.log(pmove1, pmove2, pmove3, pmove4);
+
+        moveSetup();
+    });
+
     let playerSprites = [];
     socket.on("show_opponent", (message, playerChoices) => {
         console.log(message.msg);
@@ -470,25 +822,29 @@ window.onload = function() {
         switch (playerChoices[0]) {
             case('Jeff Bezos'):
                 spriteBezos.anchor.set(0.5);
-                spriteBezos.x = -100;
+                spriteBezos.x = -420;
+                spriteBezos.y = 20;
                 gameScene.addChild(spriteBezos);
                 playerSprites.push(spriteBezos);
                 break;
             case('Elon Musk'):
                 spriteMusk.anchor.set(0.5);
-                spriteMusk.x = -100;
+                spriteMusk.x = -420;
+                spriteMusk.y = 20;
                 gameScene.addChild(spriteMusk);
                 playerSprites.push(spriteMusk);
                 break;
             case('Mark Zuckerberg'):
                 spriteZuck.anchor.set(0.5);
-                spriteZuck.x = -100;
+                spriteZuck.x = -420;
+                spriteZuck.y = 20;
                 gameScene.addChild(spriteZuck);
                 playerSprites.push(spriteZuck);
                 break;
             case('Tim Cook'):
                 spriteCook.anchor.set(0.5);
-                spriteCook.x = -100;
+                spriteCook.x = -420;
+                spriteCook.y = 20;
                 gameScene.addChild(spriteCook);
                 playerSprites.push(spriteCook);
                 break;
@@ -497,25 +853,29 @@ window.onload = function() {
         switch (playerChoices[1]) {
             case('Jeff Bezos'):
                 spriteBezos.anchor.set(0.5);
-                spriteBezos.x = 100;
+                spriteBezos.x = 420;
+                spriteBezos.y = 20;
                 gameScene.addChild(spriteBezos);
                 playerSprites.push(spriteBezos);
                 break;
             case('Elon Musk'):
                 spriteMusk.anchor.set(0.5);
-                spriteMusk.x = 100;
+                spriteMusk.x = 420;
+                spriteMusk.y = 20;
                 gameScene.addChild(spriteMusk);
                 playerSprites.push(spriteMusk);
                 break;
             case('Mark Zuckerberg'):
                 spriteZuck.anchor.set(0.5);
-                spriteZuck.x = 100;
+                spriteZuck.x = 420;
+                spriteZuck.y = 20;
                 gameScene.addChild(spriteZuck);
                 playerSprites.push(spriteZuck);
                 break;
             case('Tim Cook'):
                 spriteCook.anchor.set(0.5);
-                spriteCook.x = 100;
+                spriteCook.x = 420;
+                spriteCook.y = 20;
                 gameScene.addChild(spriteCook);
                 playerSprites.push(spriteCook);
                 break;
@@ -535,20 +895,10 @@ window.onload = function() {
     });
 
     let p1combat = false;
-    let p2move = false;
     let p2combat = false;
     let count = 0;
     socket.on("combat", (message) => {
        console.log(message.msg);
-       // console.log(playerSprites);
-
-
-        // count = 0;
-
-
-        // console.log(`checking: ${p2move}`);
-
-        // console.log(`checking count: ${count}`);
 
         app.ticker.start();
         app.ticker.add(() => {
@@ -590,208 +940,6 @@ window.onload = function() {
                 }
             }
         });
-
-
-
-        // p2move = true;
-
-        // app.ticker.add(() => {
-        //     if (p2combat === false) {
-        //         playerSprites[1].x -= 10;
-        //         count++;
-        //
-        //         if (count >= 10) {
-        //             p2combat = true;
-        //         }
-        //     }
-        //     else {
-        //         playerSprites[1].x += 10;
-        //         count--;
-        //
-        //         if (count <= 0) {
-        //             p2combat = false;
-        //             console.log(`checking p2com: ${p2combat}`);
-        //             app.ticker.stop();
-        //
-        //         }
-        //     }
-        // });
-
-
-
-
-       // switch (playerSprites[0]) {
-       //     case('Jeff Bezos'):
-       //         app.ticker.add(() => {
-       //             if (p1combat === false) {
-       //                 spriteBezos.x += 10;
-       //                 count++;
-       //
-       //                 if (count >= 10) {
-       //                     p1combat = true;
-       //                 }
-       //             }
-       //             else {
-       //                 spriteBezos.x -= 10;
-       //                 count--;
-       //
-       //                 if (count <= 0) {
-       //                     app.ticker.stop();
-       //                 }
-       //             }
-       //         });
-       //         p2move = true;
-       //         break;
-       //     case('Elon Musk'):
-       //         app.ticker.add(() => {
-       //             if (p1combat === false) {
-       //                 spriteMusk.x += 10;
-       //                 count++;
-       //
-       //                 if (count >= 10) {
-       //                     p1combat = true;
-       //                 }
-       //             }
-       //             else {
-       //                 spriteMusk.x -= 10;
-       //                 count--;
-       //
-       //                 if (count <= 0) {
-       //                     app.ticker.stop();
-       //                 }
-       //             }
-       //         });
-       //         p2move = true;
-       //         break;
-       //     case('Mark Zuckerberg'):
-       //         app.ticker.add(() => {
-       //             if (p1combat === false) {
-       //                 spriteZuck.x += 10;
-       //                 count++;
-       //
-       //                 if (count >= 10) {
-       //                     p1combat = true;
-       //                 }
-       //             }
-       //             else {
-       //                 spriteZuck.x -= 10;
-       //                 count--;
-       //
-       //                 if (count <= 0) {
-       //                     app.ticker.stop();
-       //                 }
-       //             }
-       //         });
-       //         p2move = true;
-       //         break;
-       //     case('Tim Cook'):
-       //         app.ticker.add(() => {
-       //             if (p1combat === false) {
-       //                 spriteCook.x += 10;
-       //                 count++;
-       //
-       //                 if (count >= 10) {
-       //                     p1combat = true;
-       //                 }
-       //             }
-       //             else {
-       //                 spriteCook.x -= 10;
-       //                 count--;
-       //
-       //                 if (count <= 0) {
-       //                     app.ticker.stop();
-       //                 }
-       //             }
-       //         });
-       //         p2move = true;
-       //         break;
-       // }
-       //
-       // console.log(p2move);
-       // if (p2move) {
-       //     switch (playerSprites[1]) {
-       //         case('Jeff Bezos'):
-       //             app.ticker.add(() => {
-       //                 if (p2combat === false) {
-       //                     spriteBezos.x -= 10;
-       //                     count++;
-       //
-       //                     if (count >= 10) {
-       //                         p2combat = true;
-       //                     }
-       //                 }
-       //                 else {
-       //                     spriteBezos.x += 10;
-       //                     count--;
-       //
-       //                     if (count <= 0) {
-       //                         app.ticker.stop();
-       //                     }
-       //                 }
-       //             });
-       //             break;
-       //         case('Elon Musk'):
-       //             app.ticker.add(() => {
-       //                 if (p2combat === false) {
-       //                     spriteMusk.x -= 10;
-       //                     count++;
-       //
-       //                     if (count >= 10) {
-       //                         p2combat = true;
-       //                     }
-       //                 }
-       //                 else {
-       //                     spriteMusk.x += 10;
-       //                     count--;
-       //
-       //                     if (count <= 0) {
-       //                         app.ticker.stop();
-       //                     }
-       //                 }
-       //             });
-       //             break;
-       //         case('Mark Zuckerberg'):
-       //             app.ticker.add(() => {
-       //                 if (p2combat === false) {
-       //                     spriteZuck.x -= 10;
-       //                     count++;
-       //
-       //                     if (count >= 10) {
-       //                         p2combat = true;
-       //                     }
-       //                 }
-       //                 else {
-       //                     spriteZuck.x += 10;
-       //                     count--;
-       //
-       //                     if (count <= 0) {
-       //                         app.ticker.stop();
-       //                     }
-       //                 }
-       //             });
-       //             break;
-       //         case('Tim Cook'):
-       //             app.ticker.add(() => {
-       //                 if (p2combat === false) {
-       //                     spriteCook.x -= 10;
-       //                     count++;
-       //
-       //                     if (count >= 10) {
-       //                         p2combat = true;
-       //                     }
-       //                 }
-       //                 else {
-       //                     spriteCook.x += 10;
-       //                     count--;
-       //
-       //                     if (count <= 0) {
-       //                         app.ticker.stop();
-       //                     }
-       //                 }
-       //             });
-       //             break;
-       //     }
-       // }
     });
 
     socket.on("setup_victory", (message, winner) => {
