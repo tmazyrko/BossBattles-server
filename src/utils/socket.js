@@ -302,8 +302,8 @@ module.exports = Socket = (httpServer) => {
 
                 switch (winner) {
                     case("Player 1"):
-                        socket.to(room).emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1");
-                        socket.emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1");
+                        socket.to(room).emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1", 0);
+                        socket.emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1", 0);
                         const getp1wins = await rpc(`SELECT Wins, TotalGames FROM PlayerInfo WHERE Username = '${p.Player1}'`);
                         let p1wins = getp1wins.Wins += 1;
                         let p1wmatches = getp1wins.TotalGames += 1;
@@ -314,8 +314,8 @@ module.exports = Socket = (httpServer) => {
                         const updatep2loss = await rpc(`UPDATE PlayerInfo SET Losses = ${p2loss}, TotalGames = ${p2lmatches} WHERE Username = '${p.Player2}'`);
                         break;
                     case("Player 2"):
-                        socket.to(room).emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2");
-                        socket.emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2");
+                        socket.to(room).emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2", 1);
+                        socket.emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2", 1);
                         const getp2wins = await rpc(`SELECT Wins, TotalGames FROM PlayerInfo WHERE Username = '${p.Player2}'`);
                         let p2wins = getp2wins.Wins += 1;
                         let p2matches = getp2wins.TotalGames += 1;
