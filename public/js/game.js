@@ -340,7 +340,6 @@ const selectSetup = function() {
         fontFamily: 'Press Start 2P',
         fontStyle: 'bold',
     }));
-    console.log(bezosNum);
     bezosText.text = bezosNum;
     bezosText.anchor.set(0.5);
     bezosText.style = new PIXI.TextStyle(({
