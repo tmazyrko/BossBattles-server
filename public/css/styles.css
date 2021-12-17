@@ -13,6 +13,12 @@ body {
     font-family: 'Press Start 2P', cursive;
 }
 
+.index-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .main-btn {
     border: 3px #fff solid;
     border-radius: 10px;
@@ -66,4 +72,64 @@ body {
 
 .hero * {
     z-index: 5;
+}
+
+/* Leaderboard Page */
+
+.hero .content-ctr #board-div {
+    width: 73%;
+    height: 70%;
+    padding: 15px;
+    background: #fff;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#board-div .board-logo {
+    width: 50%;
+}
+
+/* Media Queries */
+
+@media (max-width: 1400px) {
+    .hero .content-ctr .logo {
+        width: 70%;
+    }
+}
+
+@media (max-width: 1000px) {
+    .main-btn {
+        width: 60%;
+    }
+}
+
+@media (max-width: 600px) {
+    .hero .logo-top {
+        position: absolute;
+        width: 25%;
+        padding: 3px;
+        margin: 5px 2px;
+    }
+
+    .content-ctr form,
+    .content-ctr form .form-control
+    {
+        width: 90%;
+        font-size: 0.65rem;
+    }
+
+    .content-ctr h5 {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 450px) {
+    .main-btn {
+        width: 40%;
+        border: 2px #fff solid;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+    }
 }
