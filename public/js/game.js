@@ -21,26 +21,20 @@ const selectBezos = PIXI.Sprite.from('../img/select-bezos.png');
 const selectMusk = PIXI.Sprite.from('../img/select-musk.png');
 const selectZuck = PIXI.Sprite.from('../img/select-zuck.png');
 const selectCook = PIXI.Sprite.from('../img/select-cook.png');
-// let atk1 = PIXI.Sprite.from('../img/atk1.png');
-// let atk2 = PIXI.Sprite.from('../img/atk2.png');
-// let atk3 = PIXI.Sprite.from('../img/atk3.png');
-// let atk4 = PIXI.Sprite.from('../img/atk4.png');
-let atk1 = new PIXI.Text('ye');
-let atk2;
-let atk3;
-let atk4;
-let pmove1;
-let pmove2;
-let pmove3;
-let pmove4;
+let atk1 = new PIXI.Text("Attack 1");
+let atk2 = new PIXI.Text("Attack 2");
+let atk3 = new PIXI.Text("Attack 3");
+let atk4 = new PIXI.Text("Attack 4");
 let player1hp = new PIXI.Text("100");
 let player2hp = new PIXI.Text("100");
 let victoryText = new PIXI.Text("WINNER IS...");
+let continueText = new PIXI.Text("Continue");
 let unlockText = new PIXI.Text("YOU'VE UNLOCKED A NEW FIGHTER!");
 let spriteBezos = PIXI.Sprite.from('../img/sprite-bezos.png');
 let spriteMusk = PIXI.Sprite.from('../img/sprite-musk.png');
 let spriteZuck = PIXI.Sprite.from('../img/sprite-zuck.png');
 let spriteCook = PIXI.Sprite.from('../img/sprite-cook.png');
+let playerSprites = [];
 let bezosNum = 0;
 let muskNum = 0;
 let zuckNum = 0;
@@ -593,29 +587,62 @@ const selectSetup = function() {
     resizeSelect();
 }
 
-// Move setup function
+// Game scene setup function
 
-const moveSetup = function() {
-    // atk1 = new PIXI.Text('ye');
-    atk2 = new PIXI.Text(pmove2);
-    atk3 = new PIXI.Text(pmove3);
-    atk4 = new PIXI.Text(pmove4);
+const gameSetup = function() {
+    window.addEventListener('resize', resizeGame);
 
-    atk1.y = 300;
-    atk1.x = -450;
     atk1.anchor.set(0.5);
+    atk1.style = new PIXI.TextStyle(({
+        fill: 0x4F6F9E,
+        fontFamily: 'Press Start 2P',
+        fontSize: 24,
+        wordWrap: true,
+        wordWrapWidth: 30,
+        align: 'center',
+    }));
 
-    atk2.y = 300;
-    atk2.x = -150;
+    atk1.style.stroke = 0x000000;
+    atk1.style.strokeThickness = 3;
+
     atk2.anchor.set(0.5);
+    atk2.style = new PIXI.TextStyle(({
+        fill: 0x4F6F9E,
+        fontFamily: 'Press Start 2P',
+        fontSize: 24,
+        wordWrap: true,
+        wordWrapWidth: 30,
+        align: 'center',
+    }));
 
-    atk3.y = 300;
-    atk3.x = 150;
+    atk2.style.stroke = 0x000000;
+    atk2.style.strokeThickness = 3;
+
     atk3.anchor.set(0.5);
+    atk3.style = new PIXI.TextStyle(({
+        fill: 0x4F6F9E,
+        fontFamily: 'Press Start 2P',
+        fontSize: 24,
+        wordWrap: true,
+        wordWrapWidth: 30,
+        align: 'center',
+    }));
 
-    atk4.y = 300;
-    atk4.x = 450;
+    atk3.style.stroke = 0x000000;
+    atk3.style.strokeThickness = 3;
+
     atk4.anchor.set(0.5);
+    atk4.style = new PIXI.TextStyle(({
+        fill: 0x4F6F9E,
+        fontFamily: 'Press Start 2P',
+        fontSize: 24,
+        wordWrap: true,
+        wordWrapWidth: 30,
+        align: 'center',
+    }));
+
+    atk4.style.stroke = 0x000000;
+    atk4.style.strokeThickness = 3;
 
     gameScene.addChild(atk1);
     gameScene.addChild(atk2);
@@ -633,12 +660,13 @@ const moveSetup = function() {
 
     atk4.interactive = true;
     atk4.buttonMode = true;
-}
 
-// Game scene setup function
+    playerSprites[0].anchor.set(0.5);
+    gameScene.addChild(playerSprites[0]);
 
-const gameSetup = function() {
-    window.addEventListener('resize', resizeGame);
+    playerSprites[1].anchor.set(0.5);
+    gameScene.addChild(playerSprites[1]);
+
     player1hp.anchor.set(0.5);
     player1hp.style = new PIXI.TextStyle(({
         fill: 0x158233,
@@ -658,27 +686,107 @@ const gameSetup = function() {
 
     function resizeGame() {
 
-        if (app.screen.width <= 1800) {
+        if (app.screen.width < 1200 && app.screen.width >= 800) {
+            player1hp.y = -190;
+            player1hp.x = -300;
+            player1hp.style.fontSize = 40;
+            player1hp.style.stroke = 0x000000;
+            player1hp.style.strokeThickness = 3;
 
+            player2hp.y = -190;
+            player2hp.x = 300;
+            player2hp.style.fontSize = 40;
+            player2hp.style.stroke = 0x000000;
+            player2hp.style.strokeThickness = 3;
+
+            playerSprites[0].x = -300;
+            playerSprites[0].y = 20;
+            playerSprites[1].x = 300;
+            playerSprites[1].y = 20;
+
+            atk1.y = 260;
+            atk1.x = -300;
+            atk1.style.fontSize = 17;
+            atk2.y = 260;
+            atk2.x = -100;
+            atk2.style.fontSize = 17;
+            atk3.y = 260;
+            atk3.x = 100;
+            atk3.style.fontSize = 17;
+            atk4.y = 260;
+            atk4.x = 300;
+            atk4.style.fontSize = 17;
         }
-        else if (app.screen.width < 900 && app.screen.width >= 400) {
+        else if (app.screen.width < 800) {
+            player1hp.y = -190;
+            player1hp.x = -150;
+            player1hp.style.fontSize = 30;
+            player1hp.style.stroke = 0x000000;
+            player1hp.style.strokeThickness = 3;
 
-        }
-        else if (app.screen.width < 400) {
+            player2hp.y = -190;
+            player2hp.x = 150;
+            player2hp.style.fontSize = 30;
+            player2hp.style.stroke = 0x000000;
+            player2hp.style.strokeThickness = 3;
 
+            playerSprites[0].x = -150;
+            playerSprites[0].y = 20;
+            playerSprites[1].x = 150;
+            playerSprites[1].y = 20;
+
+            atk1.y = 260;
+            atk1.x = -160;
+            atk1.style.fontSize = 10;
+            atk2.y = 260;
+            atk2.x = -50;
+            atk2.style.fontSize = 10;
+            atk3.y = 260;
+            atk3.x = 50;
+            atk3.style.fontSize = 10;
+            atk4.y = 260;
+            atk4.x = 160;
+            atk4.style.fontSize = 10;
         }
         else {
+            player1hp.width = 90;
+            player1hp.height = 45;
             player1hp.y = -190;
             player1hp.x = -420;
             player1hp.style.fontSize = 40;
             player1hp.style.stroke = 0x000000;
             player1hp.style.strokeThickness = 3;
 
+            player2hp.width = 90;
+            player2hp.height = 45;
             player2hp.y = -190;
             player2hp.x = 420;
             player2hp.style.fontSize = 40;
             player2hp.style.stroke = 0x000000;
             player2hp.style.strokeThickness = 3;
+
+            playerSprites[0].width = 110;
+            playerSprites[0].height = 300;
+            playerSprites[0].x = -420;
+            playerSprites[0].y = 30;
+
+            playerSprites[1].width = 110;
+            playerSprites[1].height = 300;
+            playerSprites[1].x = 420;
+            playerSprites[1].y = 30;
+
+            atk1.y = 300;
+            atk1.x = -450;
+            atk1.style.fontSize = 24;
+            atk2.y = 300;
+            atk2.x = -150;
+            atk2.style.fontSize = 24;
+            atk3.y = 300;
+            atk3.x = 150;
+            atk3.style.fontSize = 24;
+            atk4.y = 300;
+            atk4.x = 450;
+            atk4.style.fontSize = 24;
         }
     }
 
@@ -687,8 +795,16 @@ const gameSetup = function() {
 
 // Victory scene setup function
 
-const victorySetup = function (winner) {
+const victorySetup = function (winner, index) {
+    window.addEventListener('resize', resizeVictory);
+
     let winnerText = new PIXI.Text(winner);
+
+    let victor = playerSprites[index];
+    victor.anchor.set(0.5);
+    victor.x = 0;
+
+    victoryScene.addChild(victor);
 
     victoryText.anchor.set(0.5);
     winnerText.anchor.set(0.5);
@@ -697,6 +813,15 @@ const victorySetup = function (winner) {
     victoryText.style = new PIXI.TextStyle(({
         fill: 0x158233,
         fontSize: 40,
+        fontFamily: 'Press Start 2P',
+        fontStyle: 'bold',
+    }));
+
+    continueText.anchor.set(0.5);
+    continueText.y = 230;
+    continueText.style = new PIXI.TextStyle(({
+        fill: 0x158233,
+        fontSize: 30,
         fontFamily: 'Press Start 2P',
         fontStyle: 'bold',
     }));
@@ -712,19 +837,64 @@ const victorySetup = function (winner) {
     victoryText.style.strokeThickness = 6;
     winnerText.style.stroke = 0x000000;
     winnerText.style.strokeThickness = 6;
+    continueText.style.stroke = 0x000000;
+    continueText.style.strokeThickness = 4;
 
     victoryScene.addChild(victoryText);
     victoryScene.addChild(winnerText);
+    victoryScene.addChild(continueText);
 
-    victoryText.interactive = true;
-    victoryText.buttonMode = true;
+    continueText.interactive = true;
+    continueText.buttonMode = true;
 
-    // Conditional for if the player unlocks a new character.. Placeholder for now to go to next scene
-    victoryText.on('pointerdown', (event) => {
+    continueText.on('pointerdown', (event) => {
         victoryScene.visible = false;
         unlockScene.visible = true;
         unlockSetup();
     });
+
+    function resizeVictory() {
+
+        if (app.screen.width < 1200 && app.screen.width >= 800) {
+
+        }
+        else if (app.screen.width < 800) {
+            // player1hp.y = -190;
+            // player1hp.x = -150;
+            // player1hp.style.fontSize = 30;
+            // player1hp.style.stroke = 0x000000;
+            // player1hp.style.strokeThickness = 3;
+            //
+            // player2hp.y = -190;
+            // player2hp.x = 150;
+            // player2hp.style.fontSize = 30;
+            // player2hp.style.stroke = 0x000000;
+            // player2hp.style.strokeThickness = 3;
+            //
+            // playerSprites[0].x = -150;
+            // playerSprites[0].y = 20;
+            // playerSprites[1].x = 150;
+            // playerSprites[1].y = 20;
+            //
+            // atk1.y = 260;
+            // atk1.x = -160;
+            // atk1.style.fontSize = 10;
+            // atk2.y = 260;
+            // atk2.x = -50;
+            // atk2.style.fontSize = 10;
+            // atk3.y = 260;
+            // atk3.x = 50;
+            // atk3.style.fontSize = 10;
+            // atk4.y = 260;
+            // atk4.x = 160;
+            // atk4.style.fontSize = 10;
+        }
+        else {
+
+        }
+    }
+
+    resizeVictory();
 }
 
 // Unlock scene setup function
@@ -805,78 +975,42 @@ window.onload = function() {
         console.log(message.msg);
         console.log(playerMoves);
 
-        pmove1 = playerMoves[0];
-        pmove2 = playerMoves[1];
-        pmove3 = playerMoves[2];
-        pmove4 = playerMoves[3];
-        console.log(pmove1, pmove2, pmove3, pmove4);
-
-        moveSetup();
+        atk1.text = playerMoves[0];
+        atk2.text = playerMoves[1];
+        atk3.text = playerMoves[2];
+        atk4.text = playerMoves[3];
     });
 
-    let playerSprites = [];
     socket.on("show_opponent", (message, playerChoices) => {
         console.log(message.msg);
         console.log(playerChoices);
 
         switch (playerChoices[0]) {
             case('Jeff Bezos'):
-                spriteBezos.anchor.set(0.5);
-                spriteBezos.x = -420;
-                spriteBezos.y = 20;
-                gameScene.addChild(spriteBezos);
                 playerSprites.push(spriteBezos);
                 break;
             case('Elon Musk'):
-                spriteMusk.anchor.set(0.5);
-                spriteMusk.x = -420;
-                spriteMusk.y = 20;
-                gameScene.addChild(spriteMusk);
                 playerSprites.push(spriteMusk);
                 break;
             case('Mark Zuckerberg'):
-                spriteZuck.anchor.set(0.5);
-                spriteZuck.x = -420;
-                spriteZuck.y = 20;
-                gameScene.addChild(spriteZuck);
                 playerSprites.push(spriteZuck);
                 break;
             case('Tim Cook'):
-                spriteCook.anchor.set(0.5);
-                spriteCook.x = -420;
-                spriteCook.y = 20;
-                gameScene.addChild(spriteCook);
                 playerSprites.push(spriteCook);
                 break;
         }
 
         switch (playerChoices[1]) {
             case('Jeff Bezos'):
-                spriteBezos.anchor.set(0.5);
-                spriteBezos.x = 420;
-                spriteBezos.y = 20;
-                gameScene.addChild(spriteBezos);
                 playerSprites.push(spriteBezos);
                 break;
             case('Elon Musk'):
-                spriteMusk.anchor.set(0.5);
-                spriteMusk.x = 420;
-                spriteMusk.y = 20;
-                gameScene.addChild(spriteMusk);
                 playerSprites.push(spriteMusk);
                 break;
             case('Mark Zuckerberg'):
-                spriteZuck.anchor.set(0.5);
-                spriteZuck.x = 420;
-                spriteZuck.y = 20;
-                gameScene.addChild(spriteZuck);
                 playerSprites.push(spriteZuck);
                 break;
             case('Tim Cook'):
-                spriteCook.anchor.set(0.5);
-                spriteCook.x = 420;
-                spriteCook.y = 20;
-                gameScene.addChild(spriteCook);
                 playerSprites.push(spriteCook);
                 break;
         }
@@ -942,12 +1076,27 @@ window.onload = function() {
         });
     });
 
-    socket.on("setup_victory", (message, winner) => {
+    socket.on("setup_victory", (message, winner, index) => {
         console.log(message.msg);
-        victorySetup(winner);
+        console.log(index);
+        victorySetup(winner, index);
 
         gameScene.visible = false;
         victoryScene.visible = true;
+    });
+
+    socket.on("return", (message) => {
+        console.log(message.msg);
+
+        victoryScene.visible = false;
+        matchScene.visible = true;
+    });
+
+    socket.on("unlock", (message) => {
+        console.log(message.msg);
+
+        victoryScene.visible = false;
+        unlockScene.visible = true;
     });
 
 
@@ -994,9 +1143,9 @@ window.onload = function() {
         socket.emit("ATK_SUBMIT", 4, currentRoom);
     });
 
-    victoryText.on('pointerdown', function() {
-        //socket.emit("VICTORY_CONTINUE");
-        //console.log("hello");
+    continueText.on('pointerdown', function() {
+        socket.emit("VICTORY_CONTINUE");
+        console.log("continue");
     });
 
 };
