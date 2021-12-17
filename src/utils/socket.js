@@ -74,6 +74,7 @@ module.exports = Socket = (httpServer) => {
             console.log(io.of("/").adapter.rooms)
         });
 
+        let p2socket;
         socket.on(SOCKET_ACTIONS.READY, async(room) => {
             console.log(socket.id);
             let p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
@@ -85,7 +86,9 @@ module.exports = Socket = (httpServer) => {
             {
                 const ready = await rpc(`UPDATE GameSession SET P2Ready = 1 WHERE RoomID = '${room}'`);
             }
+
             p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
+
             if (p.P1Ready == 1 && p.P2Ready == 1){
                 let amzn = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'AMZN'`);
                 let tsla = await rpc(`SELECT CAST(PercentChange AS CHAR) AS PercentChange FROM Stocks WHERE CompanyName = 'TSLA'`);
@@ -102,6 +105,8 @@ module.exports = Socket = (httpServer) => {
         });
 
         let playerChoices = [];
+        let p1Moves = [];
+        let p2Moves = [];
         socket.on(SOCKET_ACTIONS.CHARACTER_SUBMIT, async(character, room) => {
             let p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter FROM GameSession WHERE RoomID = '${room}'`);
             let playernum = 0;
@@ -142,6 +147,18 @@ module.exports = Socket = (httpServer) => {
 
             p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter FROM GameSession WHERE RoomID = '${room}'`);
 
+            if (playernum === 1) {
+                const a = await rpc(`SELECT FighterMove1, FighterMove2, FighterMove3, FighterMove4 FROM FighterInfo WHERE FighterName = '${p.P1Fighter}'`);
+                p1Moves.push(a.FighterMove1, a.FighterMove2, a.FighterMove3, a.FighterMove4);
+                console.log(socket.id);
+                io.to(socket.id).emit("show_moves", {msg: `P1 Moves: ${p1Moves}`}, p1Moves);
+            }
+            else {
+                const b = await rpc(`SELECT FighterMove1, FighterMove2, FighterMove3, FighterMove4 FROM FighterInfo WHERE FighterName = '${p.P2Fighter}'`);
+                p2Moves.push(b.FighterMove1, b.FighterMove2, b.FighterMove3, b.FighterMove4);
+                io.to(socket.id).emit("show_moves", {msg: `P2 Moves: ${p2Moves}`}, p2Moves);
+            }
+
             if (p.P1Ready === 1 && p.P2Ready === 1){
                 playerChoices.push(p.P1Fighter);
                 playerChoices.push(p.P2Fighter);
@@ -158,7 +175,6 @@ module.exports = Socket = (httpServer) => {
         });
 
         let winner;
-
         socket.on(SOCKET_ACTIONS.ATK_SUBMIT, async (chosen_attack, room) => {
             // commit players move to this room's table
             // check if both players have already attacked
@@ -169,6 +185,7 @@ module.exports = Socket = (httpServer) => {
             // cont: this will let the client update the UI to the victory screen, taking away the old triggers (buttons) and showing new ones to progress through the UI flow
 
             // IF( WIN CONDITION = TRUE) THEN EMIT TO CLIENT: socket.emit("change_scene_to_victory", {winner: "blah player"});
+            let playerHp = [];
             let p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter, P1Health, P2Health FROM GameSession WHERE RoomID = '${room}'`);
             let playernum = 0;
             let atk;
@@ -254,6 +271,9 @@ module.exports = Socket = (httpServer) => {
             else if (playernum === 2) {
                 const loss = await rpc(`UPDATE GameSession SET P1Health = '${p.P1Health}' WHERE RoomID = '${room}'`);
             }
+
+            p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready, P1Fighter, P2Fighter, P1Health, P2Health FROM GameSession WHERE RoomID = '${room}'`);
+
             if (p.P1Health > 0 && p.P2Health <= 0) {
                 winner = "Player 1";
             }
@@ -268,11 +288,17 @@ module.exports = Socket = (httpServer) => {
                     winner = "Player 2";
                 }
             }
-            p = await rpc(`SELECT Player1, Player2, P1Ready, P2Ready FROM GameSession WHERE RoomID = '${room}'`);
             if (p.P1Ready === 1 && p.P2Ready === 1){
                 console.log(`Players have each selected their move in ${room}`);
-                socket.to(room).emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, p.P1Health, p.P2Health);
-                socket.emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`});
+                playerHp.push(p.P1Health);
+                playerHp.push(p.P2Health);
+
+                io.to(room).emit("battle", {msg: `${players[socket.id]} uses ${attack}, dealing ${damage} damage!`}, playerHp);
+                io.to(room).emit("combat", {msg: `Combat ye`});
+
+                while(playerHp.length > 0) {
+                    playerHp.pop();
+                }
 
                 switch (winner) {
                     case("Player 1"):
@@ -311,16 +337,21 @@ module.exports = Socket = (httpServer) => {
             // If there is something to unlock, send a command to client to go to the unlocks scene
             //Check and see if an unlock happens and how many characters they have unlocked
             //on continue from victory screen
-            console.log("ye")
             const numCharUnlockQuery = "SELECT NumCharUnlock FROM PlayerInfo WHERE Username = \"" + players[socket.id] + "\";"
             const numCharUnlock = await rpc(numCharUnlockQuery)
             const userWinsQuery = "SELECT Wins FROM PlayerInfo WHERE Username = \"" + players[socket.id] + "\";"
             const userWins = await rpc(userWinsQuery)
             //console.log(userWins["count(Wins)"] + "user wins");
-            console.log(players[socket.id] + " has " + userWins["count(Wins)"] + " wins")
-            console.log(userWins)
-            if (userWins["Wins"] == 5 && numCharUnlock["NumCharUnlock"] == 0) {
+            console.log(players[socket.id] + " has " + userWins.Wins + " wins");
+            console.log(userWins);
+
+            if (userWins.Wins < 5) {
+                io.to(socket.id).emit("continue", {msg: "Continue..."});
+            }
+
+            if (userWins.Wins >= 5 && numCharUnlock.NumCharUnlock === 0) {
                 //socket.emit("successful_join", {msg: `you have unlocked: `})
+                io.to(socket.id).emit("unlock", {msg: "Unlock!"});
                 const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
                 const addCharUnlock = await (rpc(addCharUnlockQuery))
                 console.log(addCharUnlock)
