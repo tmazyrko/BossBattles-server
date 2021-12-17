@@ -293,12 +293,12 @@ module.exports = Socket = (httpServer) => {
 
                 switch (winner) {
                     case("Player 1"):
-                        socket.to(room).emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1", 0);
-                        socket.emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1", 0);
+                        socket.to(room).emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1");
+                        socket.emit("setup_victory", {msg: "Player 1 wins!"}, "Player 1");
                         break;
                     case("Player 2"):
-                        socket.to(room).emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2", 1);
-                        socket.emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2", 1);
+                        socket.to(room).emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2");
+                        socket.emit("setup_victory", {msg: "Player 2 wins!"}, "Player 2");
                         break;
                 }
 
@@ -312,43 +312,39 @@ module.exports = Socket = (httpServer) => {
             // If there is something to unlock, send a command to client to go to the unlocks scene
             //Check and see if an unlock happens and how many characters they have unlocked
             //on continue from victory screen
-
             const numCharUnlockQuery = "SELECT NumCharUnlock FROM PlayerInfo WHERE Username = \"" + players[socket.id] + "\";"
             const numCharUnlock = await rpc(numCharUnlockQuery)
             const userWinsQuery = "SELECT Wins FROM PlayerInfo WHERE Username = \"" + players[socket.id] + "\";"
             const userWins = await rpc(userWinsQuery)
             //console.log(userWins["count(Wins)"] + "user wins");
-            console.log(players[socket.id] + " has " + userWins["count(Wins)"] + " wins")
-            console.log(userWins)
+            console.log(players[socket.id] + " has " + userWins.Wins + " wins");
+            console.log(userWins);
 
-            if (userWins["Wins"] < 5) {
-                io.to(socket.id).emit("return", {msg: `Returning...`});
+            if (userWins.Wins < 5) {
+                io.to(socket.id).emit("continue", {msg: "Continue..."});
             }
 
-            if (userWins["Wins"] === 5 && numCharUnlock["NumCharUnlock"] === 0) {
+            if (userWins.Wins >= 5 && numCharUnlock.NumCharUnlock === 0) {
                 //socket.emit("successful_join", {msg: `you have unlocked: `})
+                io.to(socket.id).emit("unlock", {msg: "Unlock!"});
                 const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
                 const addCharUnlock = await (rpc(addCharUnlockQuery))
                 console.log(addCharUnlock)
-                io.to(socket.id).emit("unlock", {msg: 'Unlocked!'});
             }
             if (userWins["Wins"] == 10 && numCharUnlock["NumCharUnlock"] == 1) {
                 const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
                 const addCharUnlock = await (rpc(addCharUnlockQuery))
                 console.log(addCharUnlock)
-                io.to(socket.id).emit("unlock", {msg: 'Unlocked!'});
             }
             if (userWins["Wins"] == 15 && numCharUnlock["NumCharUnlock"] == 2) {
                 const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
                 const addCharUnlock = await (rpc(addCharUnlockQuery))
                 console.log(addCharUnlock)
-                io.to(socket.id).emit("unlock", {msg: 'Unlocked!'});
             }
             if (userWins["Wins"] == 20 && numCharUnlock["NumCharUnlock"] == 3) {
                 const addCharUnlockQuery = "UPDATE PlayerInfo SET NumCharUnlock = " + (numCharUnlock["NumCharUnlock"]+1) + " WHERE Username = \"" + players[socket.id] + "\";"
                 const addCharUnlock = await (rpc(addCharUnlockQuery))
                 console.log(addCharUnlock)
-                io.to(socket.id).emit("unlock", {msg: 'Unlocked!'});
             }
             // Two possible options here:
             // Keep both players in a room for now and emit/reply specifically to each client's msgs by saving the socket id of sender and using io.sockets.socket(savedSocketId).emit(...)

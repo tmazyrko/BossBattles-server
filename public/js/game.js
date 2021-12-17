@@ -818,7 +818,7 @@ const victorySetup = function (winner, index) {
     }));
 
     continueText.anchor.set(0.5);
-    continueText.y = 230;
+    continueText.y = 240;
     continueText.style = new PIXI.TextStyle(({
         fill: 0x158233,
         fontSize: 30,
@@ -846,12 +846,6 @@ const victorySetup = function (winner, index) {
 
     continueText.interactive = true;
     continueText.buttonMode = true;
-
-    continueText.on('pointerdown', (event) => {
-        victoryScene.visible = false;
-        unlockScene.visible = true;
-        unlockSetup();
-    });
 
     function resizeVictory() {
 
@@ -1085,7 +1079,7 @@ window.onload = function() {
         victoryScene.visible = true;
     });
 
-    socket.on("return", (message) => {
+    socket.on("continue", (message) => {
         console.log(message.msg);
 
         victoryScene.visible = false;
